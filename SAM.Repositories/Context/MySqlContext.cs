@@ -7,7 +7,7 @@ namespace SAM.Repositories.Database.Context
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySQL("Server=localhost;Database=SAM;User=root;Password=123456;");
+            optionsBuilder.UseMySQL();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -6,8 +6,6 @@ namespace SAM.Repositories.Database
 {
     public class UserRepository : RepositoryDatabase<User>
     {
-        public UserRepository(MySqlContext context) : base(context)
-        {
-        }
+        public UserRepository(MySqlContext context) : base(context) { }
     }
 }

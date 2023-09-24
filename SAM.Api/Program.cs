@@ -1,6 +1,14 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using SAM.Api.Token;
+using SAM.Entities;
 using SAM.Repositories.Database.Context;
 using SAM.Repositories.Database.Extensions;
+using System.Text;
+
 namespace SAM.Api
 {
     public class Program
@@ -9,13 +17,71 @@ namespace SAM.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            builder.Services.AddCors(cors => cors.AddPolicy("AllowOriginAndMethod", options => options
+                .WithOrigins(new[] { "*" })
+                .AllowAnyMethod()));
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-            builder.Services.AddDataBaseRepository();
+
+            builder.Services.AddDatabaseRepository();
+
+            //configura a autenticação do swagger
+            builder.Services.AddSwaggerGen(option =>
+            {
+                option.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Informe o token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "bearer"
+                });
+                option.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type=ReferenceType.SecurityScheme,
+                                Id="Authorization"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+
+                });
+            });
+
+            #region Injeção de dependência do JWT Token
+            var tokenConfiguration = new TokenConfiguration();
+            var authenticate = new Authenticate();
+            new ConfigureFromConfigurationOptions<TokenConfiguration>(builder.Configuration.GetSection("TokenConfiguration")).Configure(tokenConfiguration);
+            builder.Services.AddSingleton(tokenConfiguration);
+            builder.Services.AddScoped(typeof(GenerateToken));
+            #endregion
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ClockSkew = TimeSpan.Zero,
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidAudience = tokenConfiguration.Audience,
+                    ValidIssuer = tokenConfiguration.Issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfiguration.Secret))
+                };
+            });
 
             var app = builder.Build();
 
@@ -32,10 +98,11 @@ namespace SAM.Api
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("AllowOriginAndMethod");
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 

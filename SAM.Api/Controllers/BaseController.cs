@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SAM.Repositories.Interfaces;
 
 namespace SAM.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class BaseController<T> : Controller
+    [Authorize]
+
+    public abstract class BaseController<T> : Controller
         where T : class
     {
         private readonly IRepositoryDatabase<T> repository;
@@ -18,7 +21,7 @@ namespace SAM.Api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public T Get(int id)
+        public virtual T Get(int id)
         {
             return repository.Read(id);
         }

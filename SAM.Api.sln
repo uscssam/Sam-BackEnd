@@ -5,11 +5,9 @@ VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAM.Api", "SAM.Api\SAM.Api.csproj", "{0AF2C17A-EF31-4CA0-A27B-6687DF7E4B8B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{E7C3F1C1-E7AA-438B-933A-D38E9F71E1C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAM.Entities", "SAM.Entities\SAM.Entities.csproj", "{3EA2801D-F241-48F8-B010-9F7A319E10FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAM.Entities", "SAM.Entities\SAM.Entities.csproj", "{3EA2801D-F241-48F8-B010-9F7A319E10FC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAM.Repositories.Database", "SAM.Repositories\SAM.Repositories.Database.csproj", "{B18CEEDE-6244-43DA-A1B3-E48C022AE2CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAM.Repositories.Database", "SAM.Repositories\SAM.Repositories.Database.csproj", "{B18CEEDE-6244-43DA-A1B3-E48C022AE2CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,10 +30,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{3EA2801D-F241-48F8-B010-9F7A319E10FC} = {E7C3F1C1-E7AA-438B-933A-D38E9F71E1C3}
-		{B18CEEDE-6244-43DA-A1B3-E48C022AE2CD} = {E7C3F1C1-E7AA-438B-933A-D38E9F71E1C3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A22D910E-6408-4E27-8248-09DEC76AF9C2}

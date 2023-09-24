@@ -7,7 +7,7 @@ namespace SAM.Repositories.Database.Extensions
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddDataBaseRepository(this IServiceCollection services)
+        public static IServiceCollection AddDatabaseRepository(this IServiceCollection services)
         {
             services.AddDbContext<MySqlContext>();
             services.AddTransient<IRepositoryDatabase<Machine>, MachineRepository>();

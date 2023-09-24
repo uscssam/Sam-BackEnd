@@ -1,16 +1,21 @@
-﻿using SAM.Repositories.Database.Context;
+﻿using Microsoft.EntityFrameworkCore;
+using SAM.Repositories.Database.Context;
 using SAM.Repositories.Interfaces;
+using System;
+using System.Linq.Expressions;
 
 namespace SAM.Repositories.Abstract
 {
     public abstract class RepositoryDatabase<T> : IRepositoryDatabase<T>
         where T : class
     {
-        private readonly MySqlContext context;
+        protected readonly MySqlContext context;
+        protected readonly DbSet<T> dbSet;
 
         public RepositoryDatabase(MySqlContext context)
         {
             this.context = context;
+            this.dbSet = context.Set<T>();
         }
 
         public T Create(T model)
@@ -37,9 +42,9 @@ namespace SAM.Repositories.Abstract
             return context.Set<T>().ToList();
         }
 
-        public List<T> Search(T model)
+        public List<T> Search(Expression<Func<T, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return dbSet.Where(predicate).AsNoTracking().ToList();
         }
 
         public T Update(T model)
