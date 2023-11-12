@@ -7,7 +7,7 @@ namespace SAM.Repositories.Database.Context
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySQL();
+            optionsBuilder.UseMySQL("Server=anamello.ddns.net;Database=SAM;User=sam;Password=123456;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

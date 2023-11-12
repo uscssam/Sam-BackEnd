@@ -17,9 +17,11 @@ namespace SAM.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddCors(cors => cors.AddPolicy("AllowOriginAndMethod", options => options
-                .WithOrigins(new[] { "*" })
-                .AllowAnyMethod()));
+            builder.Services.AddCors(cors => cors.AddPolicy("AllowOriginAndMethod", policy => {
+                policy.WithOrigins("*")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            }));
 
             builder.Services.AddControllers();
 
@@ -27,7 +29,7 @@ namespace SAM.Api
 
             builder.Services.AddDatabaseRepository();
 
-            //configura a autenticação do swagger
+            //configura a autenticaï¿½ï¿½o do swagger
             builder.Services.AddSwaggerGen(option =>
             {
                 option.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme
@@ -56,7 +58,7 @@ namespace SAM.Api
                 });
             });
 
-            #region Injeção de dependência do JWT Token
+            #region Injeï¿½ï¿½o de dependï¿½ncia do JWT Token
             var tokenConfiguration = new TokenConfiguration();
             var authenticate = new Authenticate();
             new ConfigureFromConfigurationOptions<TokenConfiguration>(builder.Configuration.GetSection("TokenConfiguration")).Configure(tokenConfiguration);
@@ -85,7 +87,7 @@ namespace SAM.Api
 
             var app = builder.Build();
 
-            //executa as migrações
+            //executa as migraï¿½ï¿½es
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetService<MySqlContext>();
