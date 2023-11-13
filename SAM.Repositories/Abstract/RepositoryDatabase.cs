@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SAM.Entities;
 using SAM.Repositories.Database.Context;
 using SAM.Repositories.Interfaces;
-using System;
 using System.Linq.Expressions;
 
 namespace SAM.Repositories.Abstract
 {
     public abstract class RepositoryDatabase<T> : IRepositoryDatabase<T>
-        where T : class
+        where T : BaseEntity
     {
         protected readonly MySqlContext context;
         protected readonly DbSet<T> dbSet;
@@ -25,31 +25,36 @@ namespace SAM.Repositories.Abstract
             return ret;
         }
 
-        public void Delete(int id)
+        public bool Delete(int id)
         {
             var entity = Read(id);
-            context.Remove(entity);
-            context.SaveChanges();
+            if (entity != null)
+            {
+                entity.DeletedAt = DateTime.Now;
+                Update(entity);
+                return true;
+            }
+            return false;
         }
 
         public T Read(int id)
         {
-            return context.Set<T>().Find(id);
-        }    
+            return dbSet.FirstOrDefault(r => r.Id == id && r.DeletedAt == null);
+        }
 
         public List<T> ReadAll()
         {
-            return context.Set<T>().ToList();
+            return dbSet.Where(r => !r.DeletedAt.HasValue).ToList();
         }
 
         public List<T> Search(Expression<Func<T, bool>> predicate)
         {
-            return dbSet.Where(predicate).AsNoTracking().ToList();
+            return dbSet.Where(r => !r.DeletedAt.HasValue).Where(predicate).AsNoTracking().ToList();
         }
 
         public T Update(T model)
         {
-            var ret = context.Update(model).Entity;
+            var ret = dbSet.Update(model).Entity;
             context.SaveChanges();
             return ret;
         }

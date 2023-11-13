@@ -1,8 +1,7 @@
 ﻿namespace SAM.Entities
 {
-    public class Unit
+    public class Unit : BaseEntity
     {
-        public int IdUnit { get; set; }
         public string? Name { get; set; }
         public string? Road { get; set; }
         public string? Neighborhood { get; set; }

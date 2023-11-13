@@ -2,9 +2,8 @@
 
 namespace SAM.Entities
 {
-    public class OrderService
+    public class OrderService : BaseEntity
     {
-        public int IdOrderService { get; set; }
         public string? Description { get; set; }
         public OrderServiceStatusEnum Status { get; set; }
         public DateTime Opening { get; set; }

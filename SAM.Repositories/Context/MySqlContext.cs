@@ -18,7 +18,8 @@ namespace SAM.Repositories.Database.Context
             modelBuilder.Entity<Machine>(entity =>
             {
                 entity.ToTable("Machines");
-                entity.HasKey(e => e.IdMachine);
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("IdMachine");
                 entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.Status).IsRequired();
                 entity.Property(e => e.LastMaintenance);
@@ -29,7 +30,8 @@ namespace SAM.Repositories.Database.Context
             modelBuilder.Entity<OrderService>(entity =>
             {
                 entity.ToTable("OrderServices");
-                entity.HasKey(e => e.IdOrderService);
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("IdOrderService");
                 entity.Property(e => e.Description).HasMaxLength(500);
                 entity.Property(e => e.Status)
                     .IsRequired()
@@ -48,7 +50,8 @@ namespace SAM.Repositories.Database.Context
             modelBuilder.Entity<Unit>(entity =>
             {
                 entity.ToTable("Units");
-                entity.HasKey(e => e.IdUnit);
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("IdUnit");
                 entity.Property(e => e.Name).HasMaxLength(50);
                 entity.Property(e => e.Road).HasMaxLength(50);
                 entity.Property(e => e.Neighborhood).HasMaxLength(50);
@@ -60,8 +63,10 @@ namespace SAM.Repositories.Database.Context
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("Users");
-                entity.HasKey(e => e.IdUser);
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("IdUser");
                 entity.Property(e => e.UserName).HasMaxLength(50);
+                entity.Property(e => e.Fullname).HasMaxLength(50);
                 entity.Property(e => e.Email).HasMaxLength(50);
                 entity.Property(e => e.Password).HasMaxLength(20);
                 entity.Property(e => e.Phone).HasMaxLength(20);

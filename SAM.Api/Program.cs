@@ -23,7 +23,10 @@ namespace SAM.Api
                 .AllowAnyMethod();
             }));
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(config =>
+            {
+                config.Filters.Add(new AuthorizationFilter());
+            });
 
             builder.Services.AddEndpointsApiExplorer();
 
@@ -58,7 +61,7 @@ namespace SAM.Api
                 });
             });
 
-            #region Inje��o de depend�ncia do JWT Token
+            #region Injeção de dependência do JWT Token
             var tokenConfiguration = new TokenConfiguration();
             var authenticate = new Authenticate();
             new ConfigureFromConfigurationOptions<TokenConfiguration>(builder.Configuration.GetSection("TokenConfiguration")).Configure(tokenConfiguration);

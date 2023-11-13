@@ -31,18 +31,15 @@ namespace SAM.Api.Token
                 var user = _userRepository.Search(u => u.UserName == authenticate.Username && u.Password == authenticate.Password).FirstOrDefault();
 
                 if (user == null)
-                {
                     return null;
-                }
 
-                var subject = new Claim(JwtClaimTypes.Subject, _configuration.Subject);
-                var module = new Claim("module", _configuration.Module);
-                var userClaim = new Claim("UserName", user.UserName);
                 List<Claim> claims = new()
                 {
-                    subject,
-                    module,
-                    userClaim
+                    new Claim(JwtClaimTypes.Subject, _configuration.Subject),
+                    new Claim("module", _configuration.Module),
+                    new Claim("name", user.UserName),
+                    new Claim("fullname", user.Fullname),
+                    new Claim("role", user.Level.ToString())
                 };
 
                 var jwtToken = new JwtSecurityToken(
@@ -51,7 +48,6 @@ namespace SAM.Api.Token
                     claims: claims,
                     expires: DateTime.Now.AddHours(_configuration.ExpirationtimeInHours),
                     signingCredentials: new SigningCredentials(securityKey, "HS256"));
-
 
                 return tokenHandler.WriteToken(jwtToken);
             }))());

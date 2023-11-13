@@ -1,19 +1,18 @@
 ﻿using SAM.Entities.Enum;
+using System.Text.Json.Serialization;
 
 namespace SAM.Entities
 {
-    public class User
+    public class User : BaseEntity
     {
-        public int IdUser { get; private set; }
         public string? UserName { get; set; }
+        public string? Fullname { get; set; }
         public string? Email { get; set; }
+        [JsonIgnore]
         public string? Password { get; set; }
         public string? Phone { get; set; }
         public LevelEnum? Level { get; set; }
-        public TechnicianTypeEnum? Speciality { get; set; } 
-        /// <summary>
-        /// Para aqueles que estão em atendimento
-        /// </summary>
+        public TechnicianTypeEnum? Speciality { get; set; }
         public bool Available { get; set; }
     }
 }

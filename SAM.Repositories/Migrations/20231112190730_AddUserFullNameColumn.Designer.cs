@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SAM.Repositories.Database.Context;
 
@@ -10,9 +11,11 @@ using SAM.Repositories.Database.Context;
 namespace SAM.Repositories.Database.Migrations
 {
     [DbContext(typeof(MySqlContext))]
-    partial class MySqlContextModelSnapshot : ModelSnapshot
+    [Migration("20231112190730_AddUserFullNameColumn")]
+    partial class AddUserFullNameColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,9 +27,6 @@ namespace SAM.Repositories.Database.Migrations
                     b.Property<int>("IdMachine")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("LastMaintenance")
                         .HasColumnType("datetime(6)");
@@ -54,9 +54,6 @@ namespace SAM.Repositories.Database.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Closed")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
@@ -94,9 +91,6 @@ namespace SAM.Repositories.Database.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("Name")
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
@@ -129,9 +123,6 @@ namespace SAM.Repositories.Database.Migrations
 
                     b.Property<bool>("Available")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(50)
