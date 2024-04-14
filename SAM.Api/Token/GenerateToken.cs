@@ -1,5 +1,4 @@
-﻿using IdentityModel;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using SAM.Entities;
 using SAM.Repositories.Database;
 using SAM.Repositories.Interfaces;
@@ -35,7 +34,7 @@ namespace SAM.Api.Token
 
                 List<Claim> claims = new()
                 {
-                    new Claim(JwtClaimTypes.Subject, _configuration.Subject),
+                    new Claim("subject", _configuration.Subject),
                     new Claim("module", _configuration.Module),
                     new Claim("name", user.UserName),
                     new Claim("fullname", user.Fullname),
