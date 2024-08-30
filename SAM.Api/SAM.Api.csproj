@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SAM.Repositories\SAM.Repositories.Database.csproj" />
+    <ProjectReference Include="..\SAM.Service\SAM.Services.csproj" />
   </ItemGroup>
 
 </Project>

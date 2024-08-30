@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAM.Entities", "SAM.Entitie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SAM.Repositories.Database", "SAM.Repositories\SAM.Repositories.Database.csproj", "{B18CEEDE-6244-43DA-A1B3-E48C022AE2CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAM.Tests", "SAM.Tests\SAM.Tests.csproj", "{088C51A7-93EC-47F0-B7DB-6BA0A9A4C3EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SAM.Services", "SAM.Service\SAM.Services.csproj", "{FBB7F38B-8711-402E-B392-347DEC33B632}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{B18CEEDE-6244-43DA-A1B3-E48C022AE2CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B18CEEDE-6244-43DA-A1B3-E48C022AE2CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B18CEEDE-6244-43DA-A1B3-E48C022AE2CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{088C51A7-93EC-47F0-B7DB-6BA0A9A4C3EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{088C51A7-93EC-47F0-B7DB-6BA0A9A4C3EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{088C51A7-93EC-47F0-B7DB-6BA0A9A4C3EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{088C51A7-93EC-47F0-B7DB-6BA0A9A4C3EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBB7F38B-8711-402E-B392-347DEC33B632}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBB7F38B-8711-402E-B392-347DEC33B632}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBB7F38B-8711-402E-B392-347DEC33B632}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBB7F38B-8711-402E-B392-347DEC33B632}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

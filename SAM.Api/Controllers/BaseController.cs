@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SAM.Entities;
-using SAM.Repositories.Interfaces;
+using SAM.Services.Interfaces;
 
 namespace SAM.Api.Controllers
 {
@@ -12,11 +12,11 @@ namespace SAM.Api.Controllers
     public abstract class BaseController<T> : Controller
         where T : BaseEntity
     {
-        private readonly IRepositoryDatabase<T> repository;
+        protected readonly IService<T> service;
 
-        public BaseController(IRepositoryDatabase<T> repository)
+        public BaseController(IService<T> service)
         {
-            this.repository = repository;
+            this.service = service;
         }
 
         [HttpGet("{id}")]
@@ -24,7 +24,7 @@ namespace SAM.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Get(int id)
         {
-            var register = repository.Read(id);
+            var register = service.Get(id);
             if (register != null)
                 return Ok(register);
             else return NotFound(null);
@@ -34,7 +34,7 @@ namespace SAM.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetAll()
         {
-            return Ok(repository.ReadAll());
+            return Ok(service.GetAll());
         }
 
         [HttpDelete]
@@ -43,7 +43,7 @@ namespace SAM.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Delete(int id)
         {
-            var deleted = repository.Delete(id);
+            var deleted = service.Delete(id);
             if (deleted)
                 return Ok(null);
             else return NotFound(null);
@@ -55,7 +55,7 @@ namespace SAM.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Create(T entity)
         {
-            var created = repository.Create(entity);
+            var created = service.Create(entity);
             if (created != null)
                 return Ok(created);
             else return BadRequest();
@@ -67,7 +67,7 @@ namespace SAM.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Update(T entity)
         {
-            var updated = repository.Update(entity);
+            var updated = service.Update(entity);
             if(updated != null)
                 return Ok(updated);
             else return BadRequest();

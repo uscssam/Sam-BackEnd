@@ -7,6 +7,7 @@ using SAM.Api.Token;
 using SAM.Entities;
 using SAM.Repositories.Database.Context;
 using SAM.Repositories.Database.Extensions;
+using SAM.Service.Extensions;
 using System.Text;
 
 namespace SAM.Api
@@ -28,9 +29,10 @@ namespace SAM.Api
                 config.Filters.Add(new AuthorizationFilter());
             });
 
-            builder.Services.AddEndpointsApiExplorer();
-
-            builder.Services.AddDatabaseRepository();
+            builder.Services
+                .AddEndpointsApiExplorer()
+                .AddDatabaseRepository()
+                .AddServices();
 
             //configura a autentica��o do swagger
             builder.Services.AddSwaggerGen(option =>
