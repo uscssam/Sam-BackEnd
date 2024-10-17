@@ -1,5 +1,4 @@
 ﻿using SAM.Entities;
-using SAM.Repositories.Interfaces;
 using SAM.Services.Interfaces;
 
 namespace SAM.Api.Controllers

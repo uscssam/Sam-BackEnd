@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SAM.Entities
+﻿namespace SAM.Entities
 {
     public class Authenticate
     {

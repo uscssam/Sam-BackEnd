@@ -18,7 +18,8 @@ namespace SAM.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddCors(cors => cors.AddPolicy("AllowOriginAndMethod", policy => {
+            builder.Services.AddCors(cors => cors.AddPolicy("AllowOriginAndMethod", policy =>
+            {
                 policy.WithOrigins("*")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
@@ -33,8 +34,8 @@ namespace SAM.Api
                 .AddEndpointsApiExplorer()
                 .AddDatabaseRepository()
                 .AddServices();
-
-            //configura a autentica��o do swagger
+            
+            //configura a autenticação do swagger
             builder.Services.AddSwaggerGen(option =>
             {
                 option.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme
@@ -86,13 +87,13 @@ namespace SAM.Api
                     ValidateLifetime = true,
                     ValidAudience = tokenConfiguration.Audience,
                     ValidIssuer = tokenConfiguration.Issuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfiguration.Secret))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfiguration.Secret!))
                 };
             });
 
             var app = builder.Build();
 
-            //executa as migra��es
+            //executa as migrações
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetService<MySqlContext>();

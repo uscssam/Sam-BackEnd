@@ -21,7 +21,7 @@ namespace SAM.Api.Controllers
             var token = await _generateToken.GenerateJwt(authInfo);
             if(token == null)
             {
-                return NotFound(new { Message = "Usuário ou senha Inválidos" });
+                return NotFound("Usuário ou senha Inválidos");
             }
             return Ok(new { Token = token });
         }

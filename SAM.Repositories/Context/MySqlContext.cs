@@ -1,13 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SAM.Entities;
 
 namespace SAM.Repositories.Database.Context
 {
     public class MySqlContext : DbContext
     {
+        private readonly IConfiguration _configuration;
+
+        public MySqlContext(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySQL("Server=anamello.ddns.net;Database=SAM;User=sam;Password=123456;");
+            var connectionString = _configuration.GetConnectionString("MySqlConnection");
+            optionsBuilder.UseMySQL(connectionString!);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,9 +30,16 @@ namespace SAM.Repositories.Database.Context
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("IdMachine");
                 entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
-                entity.Property(e => e.Status).IsRequired();
+                entity.Property(e => e.Status)
+                        .IsRequired()
+                        .HasConversion<int>();
                 entity.Property(e => e.LastMaintenance);
-                entity.Property(e => e.Preventive);
+
+                // Configuração da relação com a tabela Unit
+                entity.HasOne<Unit>()
+                      .WithMany()
+                      .HasForeignKey(m => m.IdUnit)
+                      .IsRequired();
             });
 
             // Configuração da tabela OrderService
@@ -39,11 +55,21 @@ namespace SAM.Repositories.Database.Context
                 entity.Property(e => e.Opening);
                 entity.Property(e => e.Closed);
 
-                // Configuração da relação com a tabela Unit
-                entity.HasOne(os => os.Unit);
+                entity.HasOne<User>()
+                      .WithMany()
+                      .HasForeignKey(os => os.CreatedBy)
+                      .IsRequired();
 
                 // Configuração da relação com a tabela Machine
-                entity.HasOne(os => os.Machine);
+                entity.HasOne<Machine>()
+                  .WithMany()
+                  .HasForeignKey(x => x.IdMachine)
+                  .IsRequired();
+
+                entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(x => x.IdTechnician)
+                  .IsRequired();
             });
 
             // Configuração da tabela Unit
@@ -53,7 +79,7 @@ namespace SAM.Repositories.Database.Context
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("IdUnit");
                 entity.Property(e => e.Name).HasMaxLength(50);
-                entity.Property(e => e.Road).HasMaxLength(50);
+                entity.Property(e => e.Street).HasMaxLength(50);
                 entity.Property(e => e.Neighborhood).HasMaxLength(50);
                 entity.Property(e => e.CEP).HasMaxLength(20);
                 entity.Property(e => e.Phone).HasMaxLength(20);
@@ -75,7 +101,6 @@ namespace SAM.Repositories.Database.Context
                     .HasConversion<int>();
                 entity.Property(e => e.Speciality)
                     .HasConversion<int>();
-                entity.Property(e => e.Available);
             });
         }
         public DbSet<Machine> Machines { get; set; }

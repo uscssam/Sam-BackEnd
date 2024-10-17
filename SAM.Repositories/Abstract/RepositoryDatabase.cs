@@ -39,12 +39,12 @@ namespace SAM.Repositories.Abstract
 
         public T Read(int id)
         {
-            return dbSet.FirstOrDefault(r => r.Id == id && r.DeletedAt == null);
+            return dbSet.Where(r => r.Id == id && r.DeletedAt == null).AsNoTracking().FirstOrDefault()!;
         }
 
         public List<T> ReadAll()
         {
-            return dbSet.Where(r => !r.DeletedAt.HasValue).ToList();
+            return dbSet.Where(r => !r.DeletedAt.HasValue).AsNoTracking().ToList();
         }
 
         public List<T> Search(Expression<Func<T, bool>> predicate)

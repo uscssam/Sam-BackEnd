@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Text.Json.Serialization;
 
 namespace SAM.Entities;
 public abstract class BaseEntity
 {
-    [NotMapped]
     public int Id { get; set; }
+    [JsonIgnore]
     public DateTime? DeletedAt { get; set; }
 }

@@ -14,27 +14,27 @@ namespace SAM.Services.Abstract
             this.repository = repository;
         }
 
-        public T Create(T entity)
+        public virtual T Create(T entity)
         {
             return repository.Create(entity);
         }
 
-        public bool Delete(int id)
+        public virtual bool Delete(int id)
         {
             return repository.Delete(id);
         }
 
-        public T Get(int id)
+        public virtual T Get(int id)
         {
             return repository.Read(id);
         }
 
-        public List<T> GetAll()
+        public virtual List<T> GetAll()
         {
             return repository.ReadAll();
         }
 
-        public T Update(T entity)
+        public virtual T Update(T entity)
         {
             return repository.Update(entity);
         }

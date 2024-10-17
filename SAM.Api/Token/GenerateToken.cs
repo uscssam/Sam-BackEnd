@@ -23,19 +23,19 @@ namespace SAM.Api.Token
         {
             return await Task.FromResult(((Func<string>)(() =>
             {
-                var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration.Secret));
+                var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration.Secret!));
                 var tokenHandler = new JwtSecurityTokenHandler();
 
 
                 var user = _userRepository.Search(u => u.UserName == authenticate.Username && u.Password == authenticate.Password).FirstOrDefault();
 
                 if (user == null)
-                    return null;
+                    return null!;
 
                 List<Claim> claims = new()
                 {
-                    new Claim("subject", _configuration.Subject),
-                    new Claim("module", _configuration.Module),
+                    new Claim("subject", _configuration.Subject!),
+                    new Claim("module", _configuration.Module!),
                     new Claim("name", user.UserName),
                     new Claim("fullname", user.Fullname),
                     new Claim("role", user.Level.ToString())

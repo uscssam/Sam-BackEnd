@@ -10,7 +10,7 @@ namespace SAM.Service
 
         public List<Machine> ListByUnit(int unitId)
         {
-            return repository.Search(m => m.Id == unitId);
+            return repository.Search(m => m.IdUnit == unitId);
         }
     }
 }
