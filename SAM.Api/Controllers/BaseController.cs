@@ -22,7 +22,7 @@ namespace SAM.Api.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Get(int id)
+        public virtual IActionResult Get(int id)
         {
             var register = service.Get(id);
             if (register != null)
@@ -32,20 +32,20 @@ namespace SAM.Api.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAll()
+        public virtual IActionResult GetAll()
         {
             return Ok(service.GetAll());
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Delete(int id)
+        public virtual IActionResult Delete([FromRoute] int id)
         {
             var deleted = service.Delete(id);
             if (deleted)
-                return Ok(null);
+                return Ok(true);
             else return NotFound(null);
         }
 
@@ -53,7 +53,7 @@ namespace SAM.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Create(T entity)
+        public virtual IActionResult Create(T entity)
         {
             var created = service.Create(entity);
             if (created != null)
@@ -65,7 +65,7 @@ namespace SAM.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Update(T entity)
+        public virtual IActionResult Update(T entity)
         {
             var updated = service.Update(entity);
             if(updated != null)

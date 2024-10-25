@@ -1,5 +1,4 @@
 ﻿using SAM.Entities;
-using SAM.Service;
 
 namespace SAM.Services.Interfaces
 {

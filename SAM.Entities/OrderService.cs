@@ -4,11 +4,12 @@ namespace SAM.Entities
 {
     public class OrderService : BaseEntity
     {
-        public string? Description { get; set; }
-        public OrderServiceStatusEnum Status { get; set; }
-        public DateTime Opening { get; set; }
-        public DateTime Closed { get; set; }
-        public Unit? Unit { get; set; }
-        public Machine? Machine { get; set; }
+        public required string Description { get; set; }
+        public required OrderServiceStatusEnum Status { get; set; }
+        public required DateTime Opening { get; set; }
+        public DateTime? Closed { get; set; }
+        public required int IdMachine { get; set; }
+        public required int IdTechnician { get; set; }
+        public required int CreatedBy { get; set; }
     }
 }

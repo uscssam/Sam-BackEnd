@@ -3,8 +3,8 @@ using System.Linq.Expressions;
 
 namespace SAM.Repositories.Interfaces
 {
-    public interface IRepositoryDatabase<T> 
-        where T: BaseEntity
+    public interface IRepositoryDatabase<T>
+        where T : BaseEntity
     {
         T Create(T model);
         T Read(int id);

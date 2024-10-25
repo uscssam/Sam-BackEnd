@@ -11,11 +11,11 @@ public class AuthorizationFilter : IAsyncAuthorizationFilter
     {
         string controllerName = ((Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)context.ActionDescriptor).ControllerName;
 
-        if (controllerName == "Login" )
+        if (controllerName == "Login")
             return Task.CompletedTask;
 
         string actionName = ((Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)context.ActionDescriptor).ActionName;
-        var role = Enum.Parse<LevelEnum>(context.HttpContext.User.Claims.FirstOrDefault(p => p.Type == ClaimTypes.Role)?.Value);
+        var role = Enum.Parse<LevelEnum>(context.HttpContext.User.Claims.FirstOrDefault(p => p.Type == ClaimTypes.Role)?.Value!);
         bool ok = false;
 
         if (actionName == "Get" || actionName == "GetAll")
