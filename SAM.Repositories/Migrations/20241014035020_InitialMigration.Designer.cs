@@ -11,7 +11,7 @@ using SAM.Repositories.Database.Context;
 namespace SAM.Repositories.Database.Migrations
 {
     [DbContext(typeof(MySqlContext))]
-    [Migration("20230909193958_InitialMigration")]
+    [Migration("20241014035020_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -19,16 +19,23 @@ namespace SAM.Repositories.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.10")
+                .HasAnnotation("ProductVersion", "7.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("SAM.Entities.Machine", b =>
                 {
-                    b.Property<int>("IdMachine")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("IdMachine");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("IdUnit")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("LastMaintenance")
+                    b.Property<DateTime?>("LastMaintenance")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Name")
@@ -36,31 +43,41 @@ namespace SAM.Repositories.Database.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<DateTime>("Preventive")
-                        .HasColumnType("datetime(6)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("tinyint(1)");
+                    b.HasKey("Id");
 
-                    b.HasKey("IdMachine");
+                    b.HasIndex("IdUnit");
 
                     b.ToTable("Machines", (string)null);
                 });
 
             modelBuilder.Entity("SAM.Entities.OrderService", b =>
                 {
-                    b.Property<int>("IdOrderService")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("IdOrderService");
+
+                    b.Property<DateTime?>("Closed")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Closed")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<int?>("MachineIdMachine")
+                    b.Property<int>("IdMachine")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdTechnician")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Opening")
@@ -69,33 +86,39 @@ namespace SAM.Repositories.Database.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UnitIdUnit")
-                        .HasColumnType("int");
+                    b.HasKey("Id");
 
-                    b.HasKey("IdOrderService");
+                    b.HasIndex("CreatedBy");
 
-                    b.HasIndex("MachineIdMachine");
+                    b.HasIndex("IdMachine");
 
-                    b.HasIndex("UnitIdUnit");
+                    b.HasIndex("IdTechnician");
 
                     b.ToTable("OrderServices", (string)null);
                 });
 
             modelBuilder.Entity("SAM.Entities.Unit", b =>
                 {
-                    b.Property<int>("IdUnit")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdUnit");
 
                     b.Property<string>("CEP")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
                     b.Property<string>("Neighborhood")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
@@ -103,28 +126,37 @@ namespace SAM.Repositories.Database.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<string>("Road")
+                    b.Property<string>("Street")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.HasKey("IdUnit");
+                    b.HasKey("Id");
 
                     b.ToTable("Units", (string)null);
                 });
 
-            modelBuilder.Entity("SAM.Entities.User", b =>
+            modelBuilder.Entity("User", b =>
                 {
-                    b.Property<int>("IdUser")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IdUser");
 
-                    b.Property<bool>("Available")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Fullname")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
@@ -132,10 +164,12 @@ namespace SAM.Repositories.Database.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Password")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
@@ -143,27 +177,43 @@ namespace SAM.Repositories.Database.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.HasKey("IdUser");
+                    b.HasKey("Id");
 
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("SAM.Entities.Machine", b =>
+                {
+                    b.HasOne("SAM.Entities.Unit", null)
+                        .WithMany()
+                        .HasForeignKey("IdUnit")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SAM.Entities.OrderService", b =>
                 {
-                    b.HasOne("SAM.Entities.Machine", "Machine")
+                    b.HasOne("User", null)
                         .WithMany()
-                        .HasForeignKey("MachineIdMachine");
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("SAM.Entities.Unit", "Unit")
+                    b.HasOne("SAM.Entities.Machine", null)
                         .WithMany()
-                        .HasForeignKey("UnitIdUnit");
+                        .HasForeignKey("IdMachine")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Machine");
-
-                    b.Navigation("Unit");
+                    b.HasOne("User", null)
+                        .WithMany()
+                        .HasForeignKey("IdTechnician")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
