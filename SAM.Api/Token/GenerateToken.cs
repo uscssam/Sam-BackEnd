@@ -38,6 +38,7 @@ namespace SAM.Api.Token
                     new Claim("module", _configuration.Module!),
                     new Claim("name", user.UserName),
                     new Claim("fullname", user.Fullname),
+                    new Claim("idUser", user.Id.ToString()),
                     new Claim("role", user.Level.ToString())
                 };
 
