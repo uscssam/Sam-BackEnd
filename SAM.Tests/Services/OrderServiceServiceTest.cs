@@ -8,8 +8,6 @@ using SAM.Services;
 using SAM.Services.AutoMapper;
 using SAM.Services.Dto;
 using SAM.Services.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 
@@ -19,7 +17,7 @@ namespace SAM.Tests.Services
     {
         private readonly Mock<IRepositoryDatabase<OrderService>> _repositoryMock;
         private readonly IMapper _mapper;
-        private readonly Mock<IService<MachineDto>> _machineService;
+        private readonly Mock<IRepositoryDatabase<Machine>> _machineRepository;
         private readonly OrderServiceService _orderServiceService;
 
         public OrderServiceServiceTests()
@@ -31,9 +29,9 @@ namespace SAM.Tests.Services
                 cfg.AddProfile(new MapperProfile())
             );
             _mapper = config.CreateMapper();
-            _machineService = new Mock<IService<MachineDto>>();
+            _machineRepository = new Mock<IRepositoryDatabase<Machine>>();
 
-            _orderServiceService = new OrderServiceService(_mapper, _repositoryMock.Object, _currentUser.Object, _machineService.Object);
+            _orderServiceService = new OrderServiceService(_mapper, _repositoryMock.Object, _currentUser.Object, _machineRepository.Object);
         }
 
         private static void SetId<T>(T obj, int id)
@@ -159,24 +157,24 @@ namespace SAM.Tests.Services
                 CreatedBy = 1
             };
             SetId(orderService, orderServiceId);
-            var machineDto = new MachineDto
+            var machine = new Machine
             {
                 Name = "Machine 1",
                 Status = MachineStatusEnum.Maintenance,
                 IdUnit = 1
             };
-            SetId(machineDto, 1);
+            SetId(machine, 1);
 
             _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
-            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _machineRepository.Setup(m => m.Read(1)).Returns(machine);
             _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Callback<OrderService>(os =>
             {
                 os.Status = OrderServiceStatusEnum.Completed;
                 os.Closed = DateTime.Now;
             }).Returns((OrderService os) => os);
-            _machineService.Setup(m => m.Update(1, It.IsAny<MachineDto>())).Callback<int, MachineDto>((id, updatedMachine) =>
+            _machineRepository.Setup(m => m.Update(It.IsAny<Machine>())).Callback<Machine>((updatedMachine) =>
             {
-                machineDto.Status = MachineStatusEnum.Active;
+                machine.Status = MachineStatusEnum.Active;
             });
 
             // Act
@@ -184,11 +182,11 @@ namespace SAM.Tests.Services
 
             // Assert
             Assert.Equal(OrderServiceStatusEnum.Completed, result.Status);
-            Assert.Equal(MachineStatusEnum.Active, machineDto.Status);
+            Assert.Equal(MachineStatusEnum.Active, machine.Status);
             Assert.NotNull(result.Closed);
             _repositoryMock.Verify(r => r.Read(orderServiceId), Times.Once);
             _repositoryMock.Verify(r => r.Update(It.IsAny<OrderService>()), Times.Once);
-            _machineService.Verify(m => m.Update(1, It.IsAny<MachineDto>()), Times.Once);
+            _machineRepository.Verify(m => m.Update(It.IsAny<Machine>()), Times.Once);
         }
 
         [Fact]
@@ -213,15 +211,15 @@ namespace SAM.Tests.Services
             {
                 IdMachine = 1
             };
-            var machineDto = new MachineDto
+            var machine = new Machine
             {
                 Name = "Machine 1",
                 Status = MachineStatusEnum.Active,
                 IdUnit = 1
             };
-            SetId(machineDto, 1);
+            SetId(machine, 1);
 
-            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _machineRepository.Setup(m => m.Read(1)).Returns(machine);
             _repositoryMock.Setup(r => r.Create(It.IsAny<OrderService>())).Returns((OrderService os) => os);
 
             // Act
@@ -229,10 +227,10 @@ namespace SAM.Tests.Services
 
             // Assert
             Assert.Equal(OrderServiceStatusEnum.Open, result.Status);
-            Assert.Equal(MachineStatusEnum.Inactive, machineDto.Status);
+            Assert.Equal(MachineStatusEnum.Inactive, machine.Status);
             Assert.Equal(1, result.CreatedBy);
             Assert.NotNull(result.Opening);
-            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+            _machineRepository.Verify(m => m.Update(machine), Times.Once);
         }
 
         [Fact]
@@ -244,15 +242,15 @@ namespace SAM.Tests.Services
                 IdMachine = 1,
                 IdTechnician = 2
             };
-            var machineDto = new MachineDto
+            var machine = new Machine
             {
                 Name = "Machine 1",
                 Status = MachineStatusEnum.Active,
                 IdUnit = 1
             };
-            SetId(machineDto, 1);
+            SetId(machine, 1);
 
-            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _machineRepository.Setup(m => m.Read(1)).Returns(machine);
             _repositoryMock.Setup(r => r.Create(It.IsAny<OrderService>())).Returns((OrderService os) => os);
 
             // Act
@@ -260,10 +258,10 @@ namespace SAM.Tests.Services
 
             // Assert
             Assert.Equal(OrderServiceStatusEnum.InProgress, result.Status);
-            Assert.Equal(MachineStatusEnum.Maintenance, machineDto.Status);
+            Assert.Equal(MachineStatusEnum.Maintenance, machine.Status);
             Assert.Equal(1, result.CreatedBy);
             Assert.NotNull(result.Opening);
-            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+            _machineRepository.Verify(m => m.Update(machine), Times.Once);
         }
 
         [Fact]
@@ -284,20 +282,20 @@ namespace SAM.Tests.Services
                 CreatedBy = 1
             };
             SetId(orderService, orderServiceId);
-            var machineDto = new MachineDto
+            var machine = new Machine
             {
                 Name = "Machine 1",
                 Status = MachineStatusEnum.Active,
                 IdUnit = 1
             };
-            SetId(machineDto, 1);
+            SetId(machine, 1);
 
             _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
-            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _machineRepository.Setup(m => m.Read(1)).Returns(machine);
             _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Returns((OrderService os) => os);
-            _machineService.Setup(m => m.Update(1, It.IsAny<MachineDto>())).Callback<int, MachineDto>((id, updatedMachine) =>
+            _machineRepository.Setup(m => m.Update(It.IsAny<Machine>())).Callback<Machine>((updatedMachine) =>
             {
-                machineDto.Status = updatedMachine.Status;
+                machine.Status = updatedMachine.Status;
             });
 
             // Act
@@ -305,10 +303,10 @@ namespace SAM.Tests.Services
 
             // Assert
             Assert.Equal(OrderServiceStatusEnum.InProgress, result.Status);
-            Assert.Equal(MachineStatusEnum.Maintenance, machineDto.Status);
+            Assert.Equal(MachineStatusEnum.Maintenance, machine.Status);
             _repositoryMock.Verify(r => r.Read(orderServiceId), Times.Once);
             _repositoryMock.Verify(r => r.Update(It.IsAny<OrderService>()), Times.Once);
-            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+            _machineRepository.Verify(m => m.Update(machine), Times.Once);
         }
 
         [Fact]
@@ -329,20 +327,20 @@ namespace SAM.Tests.Services
                 CreatedBy = 1
             };
             SetId(orderService, orderServiceId);
-            var machineDto = new MachineDto
+            var machine = new Machine
             {
                 Name = "Machine 1",
                 Status = MachineStatusEnum.Active,
                 IdUnit = 1
             };
-            SetId(machineDto, 1);
+            SetId(machine, 1);
 
             _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
-            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _machineRepository.Setup(m => m.Read(1)).Returns(machine);
             _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Returns((OrderService os) => os);
-            _machineService.Setup(m => m.Update(1, It.IsAny<MachineDto>())).Callback<int, MachineDto>((id, updatedMachine) =>
+            _machineRepository.Setup(m => m.Update(It.IsAny<Machine>())).Callback<Machine>((updatedMachine) =>
             {
-                machineDto.Status = updatedMachine.Status;
+                machine.Status = updatedMachine.Status;
             });
 
             // Act
@@ -350,10 +348,10 @@ namespace SAM.Tests.Services
 
             // Assert
             Assert.Equal(OrderServiceStatusEnum.Impeded, result.Status);
-            Assert.Equal(MachineStatusEnum.Inactive, machineDto.Status);
+            Assert.Equal(MachineStatusEnum.Inactive, machine.Status);
             _repositoryMock.Verify(r => r.Read(orderServiceId), Times.Once);
             _repositoryMock.Verify(r => r.Update(It.IsAny<OrderService>()), Times.Once);
-            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+            _machineRepository.Verify(m => m.Update(machine), Times.Once);
         }
 
 

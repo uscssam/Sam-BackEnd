@@ -5,24 +5,23 @@ using SAM.Entities.Interfaces;
 using SAM.Repositories.Interfaces;
 using SAM.Services.Abstract;
 using SAM.Services.Dto;
-using SAM.Services.Interfaces;
 
 namespace SAM.Services
 {
     public class OrderServiceService : BaseService<OrderServiceDto, OrderService>
     {
         private readonly ICurrentUser currentUser;
-        private readonly IService<MachineDto> machineService;
+        private readonly IRepositoryDatabase<Machine> machineRepository;
 
         public OrderServiceService(
             IMapper mapper, 
             IRepositoryDatabase<OrderService> repository, 
             ICurrentUser currentUser,
-            IService<MachineDto> machineService)
+            IRepositoryDatabase<Machine> machineRepository)
             : base(mapper, repository)
         {
             this.currentUser = currentUser;
-            this.machineService = machineService;
+            this.machineRepository = machineRepository;
         }
 
         public override OrderServiceDto Create(OrderServiceDto entity)
@@ -30,7 +29,7 @@ namespace SAM.Services
             if (!entity.IdMachine.HasValue) {
                 throw new ArgumentException("O valor de IdMachine informado é inválido.");
             }
-            var machine = machineService.Get(entity.IdMachine.Value) ?? throw new ArgumentException("O valor de IdMachine informado é inválido.");
+            var machine = machineRepository.Read(entity.IdMachine.Value) ?? throw new ArgumentException("O valor de IdMachine informado é inválido.");
             entity.Status = OrderServiceStatusEnum.Open;
             entity.CreatedBy = currentUser.Id;
             entity.Opening = DateTime.Now;
@@ -43,14 +42,14 @@ namespace SAM.Services
             }
 
             entity = base.Create(entity);
-            machineService.Update(machine.Id!.Value, machine);
+            machineRepository.Update(machine);
             return entity!;
         }
 
         public override OrderServiceDto Update(int id, OrderServiceDto entity)
         {
             var orderService = mapper.Map<OrderServiceDto>(repository.Read(id)) ?? throw new ArgumentException("Ordem de serviço não encontrada");
-            var machine = machineService.Get(orderService.IdMachine!.Value);
+            var machine = machineRepository.Read(orderService.IdMachine!.Value);
 
             if (entity.IdTechnician.HasValue)
             {
@@ -77,7 +76,7 @@ namespace SAM.Services
                 orderService.Status = entity.Status;
             }
             entity = base.Update(id, orderService);
-            machineService.Update(machine.Id!.Value, machine);
+            machineRepository.Update(machine);
             return entity!;
         }
     }

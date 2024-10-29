@@ -6,7 +6,7 @@ namespace SAM.Entities
     {
         public required string Name { get; set; }
         public required MachineStatusEnum Status { get; set; }
-        public DateTime? LastMaintenance { get; protected set; }
+        public DateTime? LastMaintenance { get; set; }
         public required int IdUnit { get; set; }
     }
 }
