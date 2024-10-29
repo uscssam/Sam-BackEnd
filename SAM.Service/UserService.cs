@@ -23,7 +23,7 @@ namespace SAM.Services
         {
             if(string.IsNullOrEmpty(entity.Password))
             {
-                var user = repository.Read(entity.Id!.Value);
+                var user = repository.Read(id);
                 entity.Password = user.Password;
             }
             return base.Update(id, entity);
