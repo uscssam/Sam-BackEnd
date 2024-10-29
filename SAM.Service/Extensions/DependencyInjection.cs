@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using SAM.Entities;
+﻿using AutoMapper.EquivalencyExpression;
+using Microsoft.Extensions.DependencyInjection;
 using SAM.Services;
+using SAM.Services.Dto;
 using SAM.Services.Interfaces;
+using System.Reflection;
 
 namespace SAM.Service.Extensions
 {
@@ -9,10 +11,11 @@ namespace SAM.Service.Extensions
     {
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
-            services.AddTransient<IService<Machine>, MachineService>();
-            services.AddTransient<IService<User>, UserService>();
-            services.AddTransient<IService<Unit>, UnitService>();
-            services.AddTransient<IService<OrderService>, OrderServiceService>();
+            services.AddAutoMapper(cfg => cfg.AddCollectionMappers(), Assembly.GetExecutingAssembly());
+            services.AddTransient<IService<MachineDto>, MachineService>();
+            services.AddTransient<IService<UserDto>, UserService>();
+            services.AddTransient<IService<UnitDto>, UnitService>();
+            services.AddTransient<IService<OrderServiceDto>, OrderServiceService>();
             return services;
         }
     }

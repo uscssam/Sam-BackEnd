@@ -1,7 +1,10 @@
-﻿using Moq;
+﻿using AutoMapper;
+using Moq;
 using SAM.Entities;
 using SAM.Repositories.Interfaces;
 using SAM.Services.Abstract;
+using SAM.Services.AutoMapper;
+using SAM.Services.Dto;
 using Xunit;
 
 namespace SAM.Tests.Serviceservices.Tests
@@ -9,12 +12,20 @@ namespace SAM.Tests.Serviceservices.Tests
     public class BaseServiceTests
     {
         private readonly Mock<IRepositoryDatabase<SampleEntity>> _repositoryMock;
-        private readonly BaseService<SampleEntity> _baseService;
+        private readonly IMapper _mapper;
+        private readonly BaseService<SampleDto, SampleEntity> _baseService;
 
         public BaseServiceTests()
         {
             _repositoryMock = new Mock<IRepositoryDatabase<SampleEntity>>();
-            _baseService = new SampleEntityService(_repositoryMock.Object);
+
+            var config = new MapperConfiguration(cfg => 
+                cfg.CreateMap<SampleEntity, SampleDto>()
+                    .ReverseMap()
+            );
+            _mapper = config.CreateMapper();
+
+            _baseService = new SampleEntityService(_mapper, _repositoryMock.Object);
         }
 
         [Fact]
@@ -22,13 +33,14 @@ namespace SAM.Tests.Serviceservices.Tests
         {
             // Arrange
             var entity = new SampleEntity { Id = 1, Name = "Test Entity" };
+            var dto = _mapper.Map<SampleDto>(entity);
             _repositoryMock.Setup(r => r.Create(It.IsAny<SampleEntity>())).Returns(entity);
 
             // Act
-            var result = _baseService.Create(entity);
+            var result = _baseService.Create(dto);
 
             // Assert
-            Assert.Equal(entity, result);
+            Assert.Equal(dto, result);
             _repositoryMock.Verify(r => r.Create(It.IsAny<SampleEntity>()), Times.Once);
         }
 
@@ -68,13 +80,14 @@ namespace SAM.Tests.Serviceservices.Tests
             // Arrange
             int entityId = 1;
             var entity = new SampleEntity { Id = entityId, Name = "Test Entity" };
+            var dto = _mapper.Map<SampleDto>(entity);
             _repositoryMock.Setup(r => r.Read(entityId)).Returns(entity);
 
             // Act
             var result = _baseService.Get(entityId);
 
             // Assert
-            Assert.Equal(entity, result);
+            Assert.Equal(dto, result);
             _repositoryMock.Verify(r => r.Read(entityId), Times.Once);
         }
 
@@ -87,13 +100,14 @@ namespace SAM.Tests.Serviceservices.Tests
                 new SampleEntity { Id = 1, Name = "Entity 1" },
                 new SampleEntity { Id = 2, Name = "Entity 2" }
             };
+            var dtos = _mapper.Map<IEnumerable<SampleDto>>(entities);
             _repositoryMock.Setup(r => r.ReadAll()).Returns(entities);
 
             // Act
             var result = _baseService.GetAll();
 
             // Assert
-            Assert.Equal(entities, result);
+            Assert.Equal(dtos, result);
             _repositoryMock.Verify(r => r.ReadAll(), Times.Once);
         }
 
@@ -102,25 +116,36 @@ namespace SAM.Tests.Serviceservices.Tests
         {
             // Arrange
             var entity = new SampleEntity { Id = 1, Name = "Updated Entity" };
+            var dto = _mapper.Map<SampleDto>(entity);
             _repositoryMock.Setup(r => r.Update(It.IsAny<SampleEntity>())).Returns(entity);
 
             // Act
-            var result = _baseService.Update(entity);
+            var result = _baseService.Update(entity.Id, dto);
 
             // Assert
-            Assert.Equal(entity, result);
+            Assert.Equal(dto, result);
             _repositoryMock.Verify(r => r.Update(It.IsAny<SampleEntity>()), Times.Once);
+        }
+    }
+
+    public class SampleDto: BaseDto, IEquatable<SampleDto>
+    {
+        public required string Name { get; set; }
+
+        public bool Equals(SampleDto? other)
+        {
+            return Name == other?.Name;
         }
     }
 
     public class SampleEntity : BaseEntity
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
     }
 
-    public class SampleEntityService : BaseService<SampleEntity>
+    public class SampleEntityService : BaseService<SampleDto, SampleEntity>
     {
-        public SampleEntityService(IRepositoryDatabase<SampleEntity> repository) : base(repository)
+        public SampleEntityService(IMapper mapper, IRepositoryDatabase<SampleEntity> repository) : base(mapper, repository)
         {
         }
     }

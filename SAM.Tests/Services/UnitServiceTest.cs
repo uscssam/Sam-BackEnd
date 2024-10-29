@@ -1,7 +1,10 @@
-﻿using Moq;
+﻿using AutoMapper;
+using Moq;
 using SAM.Entities;
 using SAM.Repositories.Interfaces;
 using SAM.Services;
+using SAM.Services.AutoMapper;
+using SAM.Services.Dto;
 using Xunit;
 
 namespace SAM.Tests.Services
@@ -9,12 +12,18 @@ namespace SAM.Tests.Services
     public class UnitServiceTests
     {
         private readonly Mock<IRepositoryDatabase<Unit>> _repositoryMock;
+        private readonly IMapper _mapper;
         private readonly UnitService _unitService;
 
         public UnitServiceTests()
         {
             _repositoryMock = new Mock<IRepositoryDatabase<Unit>>();
-            _unitService = new UnitService(_repositoryMock.Object);
+            var config = new MapperConfiguration(cfg =>
+                cfg.AddProfile(new MapperProfile())
+            );
+            _mapper = config.CreateMapper();
+
+            _unitService = new UnitService(_mapper, _repositoryMock.Object);
         }
 
         [Fact]
@@ -22,13 +31,14 @@ namespace SAM.Tests.Services
         {
             // Arrange
             var unit = new Unit { Id = 1, Name = "Test Unit", Street = "Test Street", Neighborhood = "Test Neighborhood", CEP = "12345-678", Number = 123, Phone = "123456789" };
+            var unitDto = _mapper.Map<UnitDto>(unit);
             _repositoryMock.Setup(r => r.Create(It.IsAny<Unit>())).Returns(unit);
 
             // Act
-            var result = _unitService.Create(unit);
+            var result = _unitService.Create(unitDto);
 
             // Assert
-            Assert.Equal(unit, result);
+            Assert.Equal(unitDto, result);
             _repositoryMock.Verify(r => r.Create(It.IsAny<Unit>()), Times.Once);
         }
 
@@ -68,13 +78,14 @@ namespace SAM.Tests.Services
             // Arrange
             int unitId = 1;
             var unit = new Unit { Id = unitId, Name = "Test Unit", Street = "Test Street", Neighborhood = "Test Neighborhood", CEP = "12345-678", Number = 123, Phone = "123456789" };
+            var unitDto = _mapper.Map<UnitDto>(unit);
             _repositoryMock.Setup(r => r.Read(unitId)).Returns(unit);
 
             // Act
             var result = _unitService.Get(unitId);
 
             // Assert
-            Assert.Equal(unit, result);
+            Assert.Equal(unitDto, result);
             _repositoryMock.Verify(r => r.Read(unitId), Times.Once);
         }
 
@@ -87,13 +98,14 @@ namespace SAM.Tests.Services
                 new Unit { Id = 1, Name = "Unit 1", Street = "Street 1", Neighborhood = "Neighborhood 1", CEP = "12345-678", Number = 123, Phone = "123456789" },
                 new Unit { Id = 2, Name = "Unit 2", Street = "Street 2", Neighborhood = "Neighborhood 2", CEP = "23456-789", Number = 456, Phone = "987654321" }
             };
+            var unitDtos = _mapper.Map<IEnumerable<UnitDto>>(units);
             _repositoryMock.Setup(r => r.ReadAll()).Returns(units);
 
             // Act
             var result = _unitService.GetAll();
 
             // Assert
-            Assert.Equal(units, result);
+            Assert.Equal(unitDtos, result);
             _repositoryMock.Verify(r => r.ReadAll(), Times.Once);
         }
 
@@ -102,13 +114,14 @@ namespace SAM.Tests.Services
         {
             // Arrange
             var unit = new Unit { Id = 1, Name = "Updated Unit", Street = "Updated Street", Neighborhood = "Updated Neighborhood", CEP = "12345-678", Number = 123, Phone = "123456789" };
+            var unitDto = _mapper.Map<UnitDto>(unit);
             _repositoryMock.Setup(r => r.Update(It.IsAny<Unit>())).Returns(unit);
 
             // Act
-            var result = _unitService.Update(unit);
+            var result = _unitService.Update(unit.Id, unitDto);
 
             // Assert
-            Assert.Equal(unit, result);
+            Assert.Equal(unitDto, result);
             _repositoryMock.Verify(r => r.Update(It.IsAny<Unit>()), Times.Once);
         }
     }

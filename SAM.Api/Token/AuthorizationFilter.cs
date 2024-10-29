@@ -1,12 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SAM.Entities.Enum;
+using SAM.Entities.Interfaces;
 using System.Security.Claims;
 
 namespace SAM.Api.Token;
 
 public class AuthorizationFilter : IAsyncAuthorizationFilter
 {
+    private ICurrentUser currentUser;
+
+    public AuthorizationFilter(ICurrentUser currentUser)
+    {
+        this.currentUser = currentUser;
+    }
+
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         string controllerName = ((Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)context.ActionDescriptor).ControllerName;
@@ -16,6 +24,7 @@ public class AuthorizationFilter : IAsyncAuthorizationFilter
 
         string actionName = ((Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)context.ActionDescriptor).ActionName;
         var role = Enum.Parse<LevelEnum>(context.HttpContext.User.Claims.FirstOrDefault(p => p.Type == ClaimTypes.Role)?.Value!);
+        currentUser.Id = int.Parse(context.HttpContext.User.Claims.FirstOrDefault(p => p.Type == "idUser")?.Value!);
         bool ok = false;
 
         if (actionName == "Get" || actionName == "GetAll")
@@ -35,32 +44,28 @@ public class AuthorizationFilter : IAsyncAuthorizationFilter
         return Task.CompletedTask;
     }
 
-    private bool ValidateTechnician(string controller, string action)
+    private static bool ValidateTechnician(string controller, string action)
     {
-        bool ok = true;
-        switch (controller)
+        return controller switch
         {
-            case "Machine": ok = false; break;
-            case "OrderService": ok = true; break;
-            case "Unit": ok = false; break;
-            case "User": ok = false; break;
-        }
-        return ok;
+            "Machine" => action == "Search",
+            "OrderService" => true,
+            "Unit" => action == "Search",
+            "User" => action == "Search",
+            _ => false,
+        };
     }
 
-    private bool ValidateEmployee(string controller, string action)
+    private static bool ValidateEmployee(string controller, string action)
     {
-        bool ok = true;
-
-        switch (controller)
+        return controller switch
         {
-            case "Machine": ok = false; break;
-            case "OrderService": ok = (action == "Create"); break;
-            case "Unit": ok = false; break;
-            case "User": ok = false; break;
-        }
-
-        return ok;
+            "Machine" => action == "Search",
+            "OrderService" => (action == "Create") || (action == "Search"),
+            "Unit" => action == "Search",
+            "User" => action == "Search",
+            _ => false,
+        };
     }
 
 

@@ -1,21 +1,38 @@
-﻿using Moq;
+﻿using AutoMapper;
+using Moq;
 using SAM.Entities;
 using SAM.Entities.Enum;
+using SAM.Entities.Interfaces;
 using SAM.Repositories.Interfaces;
+using SAM.Service;
 using SAM.Services;
+using SAM.Services.AutoMapper;
+using SAM.Services.Dto;
+using SAM.Services.Interfaces;
 using Xunit;
+using ZstdSharp.Unsafe;
 
 namespace SAM.Tests.Services
 {
     public class OrderServiceServiceTests
     {
         private readonly Mock<IRepositoryDatabase<OrderService>> _repositoryMock;
+        private readonly IMapper _mapper;
+        private readonly Mock<IService<MachineDto>> _machineService;
         private readonly OrderServiceService _orderServiceService;
 
         public OrderServiceServiceTests()
         {
             _repositoryMock = new Mock<IRepositoryDatabase<OrderService>>();
-            _orderServiceService = new OrderServiceService(_repositoryMock.Object);
+            var _currentUser = new Mock<ICurrentUser>();
+            _currentUser.Object.Id = 1; 
+            var config = new MapperConfiguration(cfg =>
+                cfg.AddProfile(new MapperProfile())
+            );
+            _mapper = config.CreateMapper();
+            _machineService = new Mock<IService<MachineDto>>();
+
+            _orderServiceService = new OrderServiceService(_mapper, _repositoryMock.Object, _currentUser.Object, _machineService.Object);
         }
 
         [Fact]
@@ -32,13 +49,14 @@ namespace SAM.Tests.Services
                 IdTechnician = 1,
                 CreatedBy = 1
             };
+            var orderServiceDto = _mapper.Map<OrderServiceDto>(orderService);
             _repositoryMock.Setup(r => r.Create(It.IsAny<OrderService>())).Returns(orderService);
 
             // Act
-            var result = _orderServiceService.Create(orderService);
+            var result = _orderServiceService.Create(orderServiceDto);
 
             // Assert
-            Assert.Equal(orderService, result);
+            Assert.Equal(orderServiceDto, result);
             _repositoryMock.Verify(r => r.Create(It.IsAny<OrderService>()), Times.Once);
         }
 
@@ -87,13 +105,14 @@ namespace SAM.Tests.Services
                 IdTechnician = 1,
                 CreatedBy = 1
             };
+            var orderServiceDto = _mapper.Map<OrderServiceDto>(orderService);
             _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
 
             // Act
             var result = _orderServiceService.Get(orderServiceId);
 
             // Assert
-            Assert.Equal(orderService, result);
+            Assert.Equal(orderServiceDto, result);
             _repositoryMock.Verify(r => r.Read(orderServiceId), Times.Once);
         }
 
@@ -124,13 +143,14 @@ namespace SAM.Tests.Services
                     CreatedBy = 2
                 }
             };
+            var orderServiceDtos = _mapper.Map<IEnumerable<OrderServiceDto>>(orderServices);
             _repositoryMock.Setup(r => r.ReadAll()).Returns(orderServices);
 
             // Act
             var result = _orderServiceService.GetAll();
 
             // Assert
-            Assert.Equal(orderServices, result);
+            Assert.Equal(orderServiceDtos, result);
             _repositoryMock.Verify(r => r.ReadAll(), Times.Once);
         }
 
@@ -148,13 +168,14 @@ namespace SAM.Tests.Services
                 IdTechnician = 1,
                 CreatedBy = 1
             };
+            var orderServiceDto = _mapper.Map<OrderServiceDto>(orderService);
             _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Returns(orderService);
 
             // Act
-            var result = _orderServiceService.Update(orderService);
+            var result = _orderServiceService.Update(orderService.Id, orderServiceDto);
 
             // Assert
-            Assert.Equal(orderService, result);
+            Assert.Equal(orderServiceDto, result);
             _repositoryMock.Verify(r => r.Update(It.IsAny<OrderService>()), Times.Once);
         }
     }

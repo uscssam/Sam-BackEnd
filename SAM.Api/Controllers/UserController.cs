@@ -1,20 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using SAM.Services.Dto;
 using SAM.Services.Interfaces;
-using System.Net;
 
 namespace SAM.Api.Controllers
 {
-    public class UserController : BaseController<User>
+    public class UserController : BaseController<UserDto, UserSearchDto>
     {
-        public UserController(IService<User> service) : base(service) { }
+        public UserController(IMapper mapper, IService<UserDto> service) : base(mapper, service) { }
 
-        public override IActionResult Create(User entity)
+        public override ActionResult<UserDto> Create(UserDto entity)
         {
             try
             {
                 var created = service.Create(entity);
                 if (created != null)
-                    return Ok(new UserReturn(created));
+                    return Ok(new UserReturnDto(created));
                 else return BadRequest();
             }
             catch (ArgumentException ex)
@@ -27,23 +28,23 @@ namespace SAM.Api.Controllers
             }
         }
 
-        public override IActionResult Get(int id)
+        public override ActionResult<UserDto> Get(int id)
         {
-            var register = new UserReturn(service.Get(id));
+            var register = new UserReturnDto(service.Get(id));
             if (register != null)
                 return Ok(register);
             else return NotFound(null);
         }
 
-        public override IActionResult GetAll()
+        public override ActionResult<IEnumerable<UserDto>> GetAll()
         {
-            var registers = service.GetAll().Select(user => new UserReturn(user)).ToList();
+            var registers = service.GetAll().Select(user => new UserReturnDto(user)).ToList();
             return Ok(registers);
         }
 
-        public override IActionResult Update(User entity)
+        public override ActionResult<UserDto> Update(int id, UserDto entity)
         {
-            var updated = new UserReturn(service.Update(entity));
+            var updated = new UserReturnDto(service.Update(id, entity));
             if (updated != null)
                 return Ok(updated);
             else return BadRequest();

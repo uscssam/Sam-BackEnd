@@ -1,7 +1,10 @@
-﻿using Moq;
+﻿using AutoMapper;
+using Moq;
 using SAM.Entities.Enum;
 using SAM.Repositories.Interfaces;
 using SAM.Services;
+using SAM.Services.AutoMapper;
+using SAM.Services.Dto;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -10,12 +13,18 @@ namespace SAM.Tests.Services
     public class UserServiceTests
     {
         private readonly Mock<IRepositoryDatabase<User>> _repositoryMock;
+        private readonly IMapper _mapper;
         private readonly UserService _userService;
 
         public UserServiceTests()
         {
             _repositoryMock = new Mock<IRepositoryDatabase<User>>();
-            _userService = new UserService(_repositoryMock.Object);
+            var config = new MapperConfiguration(cfg =>
+                cfg.AddProfile(new MapperProfile())
+            );
+            _mapper = config.CreateMapper();
+
+            _userService = new UserService(_mapper, _repositoryMock.Object);
         }
 
         [Fact]
@@ -30,10 +39,11 @@ namespace SAM.Tests.Services
                 Phone = "1234567890",
                 Level = LevelEnum.Employee
             };
+            var userDto = _mapper.Map<UserDto>(user);
             _repositoryMock.Setup(r => r.Search(It.IsAny<Expression<Func<User, bool>>>())).Returns(new List<User> { user });
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => _userService.Create(user));
+            var exception = Assert.Throws<ArgumentException>(() => _userService.Create(userDto));
             Assert.Equal("Nome do usuário já cadastrado", exception.Message);
             _repositoryMock.Verify(r => r.Search(It.IsAny<Expression<Func<User, bool>>>()), Times.Once);
         }
@@ -50,14 +60,15 @@ namespace SAM.Tests.Services
                 Phone = "1234567890",
                 Level = LevelEnum.Employee
             };
+            var userDto = _mapper.Map<UserDto>(user);
             _repositoryMock.Setup(r => r.Search(It.IsAny<Expression<Func<User, bool>>>())).Returns(new List<User>());
             _repositoryMock.Setup(r => r.Create(It.IsAny<User>())).Returns(user);
 
             // Act
-            var result = _userService.Create(user);
+            var result = _userService.Create(userDto);
 
             // Assert
-            Assert.Equal(user, result);
+            Assert.Equal(userDto, result);
             _repositoryMock.Verify(r => r.Search(It.IsAny<Expression<Func<User, bool>>>()), Times.Once);
             _repositoryMock.Verify(r => r.Create(It.IsAny<User>()), Times.Once);
         }
@@ -86,11 +97,12 @@ namespace SAM.Tests.Services
                 Fullname = "Existing User",
                 Email = "existing@example.com"
             };
+            var updatedUserDto = _mapper.Map<UserDto>(updatedUser);
             _repositoryMock.Setup(r => r.Read(existingUser.Id)).Returns(existingUser);
             _repositoryMock.Setup(r => r.Update(It.IsAny<User>())).Returns((User u) => u);
 
             // Act
-            var result = _userService.Update(updatedUser);
+            var result = _userService.Update(existingUser.Id, updatedUserDto);
 
             // Assert
             Assert.Equal(existingUser.Password, result.Password);
@@ -112,13 +124,14 @@ namespace SAM.Tests.Services
                 Fullname = "Existing User",
                 Email = "existing@example.com"
             };
+            var userDto = _mapper.Map<UserDto>(user);
             _repositoryMock.Setup(r => r.Update(It.IsAny<User>())).Returns(user);
 
             // Act
-            var result = _userService.Update(user);
+            var result = _userService.Update(user.Id, userDto);
 
             // Assert
-            Assert.Equal(user, result);
+            Assert.Equal(userDto, result);
             _repositoryMock.Verify(r => r.Update(It.IsAny<User>()), Times.Once);
         }
     }

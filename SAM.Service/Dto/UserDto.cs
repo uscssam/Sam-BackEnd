@@ -1,11 +1,10 @@
 ﻿using SAM.Entities.Enum;
-using SAM.Entities;
-using SAM.Entities.Interfaces;
 
-public class UserReturn : BaseEntity, ICurrentUser
+namespace SAM.Services.Dto;
+
+public class UserReturnDto : BaseDto, IEquatable<UserReturnDto>
 {
-    public UserReturn() { }
-    public UserReturn(User user)
+    public UserReturnDto(UserDto user)
     {
         Id = user.Id;
         UserName = user.UserName;
@@ -22,9 +21,16 @@ public class UserReturn : BaseEntity, ICurrentUser
     public string? Phone { get; set; }
     public LevelEnum? Level { get; set; }
     public TechnicianTypeEnum? Speciality { get; set; }
+
+    public bool Equals(UserReturnDto? other)
+    {
+        return GetHashCode() == other?.GetHashCode();
+    }
+
+    public override int GetHashCode() => (Id, UserName, Fullname, Email, Phone, Level, Speciality).GetHashCode();
 }
 
-public class User : BaseEntity
+public class UserDto : BaseDto, IEquatable<UserDto>
 {
     public required string UserName { get; set; }
     public required string Fullname { get; set; }
@@ -33,4 +39,11 @@ public class User : BaseEntity
     public required LevelEnum Level { get; set; }
     public TechnicianTypeEnum? Speciality { get; set; }
     public string? Password { get; set; }
+
+    public bool Equals(UserDto? other)
+    {
+        return GetHashCode() == other?.GetHashCode();
+    }
+
+    public override int GetHashCode() => (Id, UserName, Fullname, Email, Phone, Level, Speciality, Password).GetHashCode();
 }

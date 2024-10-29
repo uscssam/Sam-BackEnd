@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SAM.Api.Token;
 using SAM.Entities;
+using SAM.Entities.Interfaces;
 using SAM.Repositories.Database.Context;
 using SAM.Repositories.Database.Extensions;
 using SAM.Service.Extensions;
@@ -27,15 +28,17 @@ namespace SAM.Api
 
             builder.Services.AddControllers(config =>
             {
-                config.Filters.Add(new AuthorizationFilter());
+                config.Filters.Add<AuthorizationFilter>();
             });
+
+            builder.Services.AddScoped<ICurrentUser, UserReturn>();
 
             builder.Services
                 .AddEndpointsApiExplorer()
                 .AddDatabaseRepository()
                 .AddServices();
-            
-            //configura a autenticação do swagger
+
+            //configura a autenticação do swagger  
             builder.Services.AddSwaggerGen(option =>
             {
                 option.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme
@@ -49,27 +52,27 @@ namespace SAM.Api
                 });
                 option.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type=ReferenceType.SecurityScheme,
-                                Id="Authorization"
-                            }
-                        },
-                        Array.Empty<string>()
-                    }
+                           {
+                               new OpenApiSecurityScheme
+                               {
+                                   Reference = new OpenApiReference
+                                   {
+                                       Type=ReferenceType.SecurityScheme,
+                                       Id="Authorization"
+                                   }
+                               },
+                               Array.Empty<string>()
+                           }
 
                 });
             });
 
-            #region Injeção de dependência do JWT Token
+            #region Injeção de dependência do JWT Token  
             var tokenConfiguration = new TokenConfiguration();
             var authenticate = new Authenticate();
             new ConfigureFromConfigurationOptions<TokenConfiguration>(builder.Configuration.GetSection("TokenConfiguration")).Configure(tokenConfiguration);
             builder.Services.AddSingleton(tokenConfiguration);
-            builder.Services.AddScoped(typeof(GenerateToken));
+            builder.Services.AddScoped<IGenerateToken, GenerateToken>();
             #endregion
 
             builder.Services.AddAuthentication(options =>
@@ -93,13 +96,13 @@ namespace SAM.Api
 
             var app = builder.Build();
 
-            //executa as migrações
+            //executa as migrações  
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetService<MySqlContext>();
                 dbContext?.Database.Migrate();
             }
-            // Configure the HTTP request pipeline.
+            // Configure the HTTP request pipeline.  
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

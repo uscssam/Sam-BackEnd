@@ -8,7 +8,12 @@ using System.Text;
 
 namespace SAM.Api.Token
 {
-    public class GenerateToken
+    public interface IGenerateToken
+    {
+        Task<string> GenerateJwt(Authenticate authenticate);
+    }
+
+    public class GenerateToken : IGenerateToken
     {
         private readonly TokenConfiguration _configuration;
         private readonly UserRepository _userRepository;
@@ -38,8 +43,8 @@ namespace SAM.Api.Token
                     new Claim("module", _configuration.Module!),
                     new Claim("name", user.UserName),
                     new Claim("fullname", user.Fullname),
-                    new Claim("idUser", user.Id.ToString()),
-                    new Claim("role", user.Level.ToString())
+                    new Claim("role", user.Level.ToString()),
+                    new Claim("idUser", user.Id.ToString())
                 };
 
                 var jwtToken = new JwtSecurityToken(

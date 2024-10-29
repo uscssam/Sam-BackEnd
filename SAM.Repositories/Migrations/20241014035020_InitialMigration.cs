@@ -91,7 +91,7 @@ namespace SAM.Repositories.Database.Migrations
                     Opening = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Closed = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     IdMachine = table.Column<int>(type: "int", nullable: false),
-                    IdTechnician = table.Column<int>(type: "int", nullable: false),
+                    IdTechnician = table.Column<int>(type: "int", nullable: true),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },

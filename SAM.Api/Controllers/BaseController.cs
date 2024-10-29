@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SAM.Entities;
+using SAM.Services.Dto;
 using SAM.Services.Interfaces;
 
 namespace SAM.Api.Controllers
@@ -9,20 +10,23 @@ namespace SAM.Api.Controllers
     [Route("[controller]")]
     [Authorize]
 
-    public abstract class BaseController<T> : Controller
-        where T : BaseEntity
+    public abstract class BaseController<T, TSearch> : ControllerBase
+        where T : BaseDto
+        where TSearch : BaseDto
     {
+        protected readonly IMapper mapper;
         protected readonly IService<T> service;
 
-        public BaseController(IService<T> service)
+        protected BaseController(IMapper mapper, IService<T> service)
         {
+            this.mapper = mapper;
             this.service = service;
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public virtual IActionResult Get(int id)
+        public virtual ActionResult<T> Get(int id)
         {
             var register = service.Get(id);
             if (register != null)
@@ -32,28 +36,44 @@ namespace SAM.Api.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public virtual IActionResult GetAll()
+        public virtual ActionResult<IEnumerable<T>> GetAll()
         {
             return Ok(service.GetAll());
         }
 
+        [HttpPost("search")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public virtual ActionResult<IEnumerable<T>> Search(TSearch entity)
+        {
+            return Ok(service.Search(mapper.Map<T>(entity)));
+        }
+
         [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public virtual IActionResult Delete([FromRoute] int id)
+        public virtual ActionResult Delete([FromRoute] int id)
         {
-            var deleted = service.Delete(id);
-            if (deleted)
-                return Ok(true);
-            else return NotFound(null);
+            try
+            {
+                var deleted = service.Delete(id);
+                if (deleted)
+                    return Ok(true);
+                else return NotFound(null);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public virtual IActionResult Create(T entity)
+        public virtual ActionResult<T> Create(T entity)
         {
             var created = service.Create(entity);
             if (created != null)
@@ -61,13 +81,13 @@ namespace SAM.Api.Controllers
             else return BadRequest();
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public virtual IActionResult Update(T entity)
+        public virtual ActionResult<T> Update(int id, T entity)
         {
-            var updated = service.Update(entity);
+            var updated = service.Update(id, entity);
             if(updated != null)
                 return Ok(updated);
             else return BadRequest();

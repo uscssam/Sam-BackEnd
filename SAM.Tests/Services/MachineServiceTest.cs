@@ -1,8 +1,11 @@
-﻿using Moq;
+﻿using AutoMapper;
+using Moq;
 using SAM.Entities;
 using SAM.Entities.Enum;
 using SAM.Repositories.Interfaces;
 using SAM.Service;
+using SAM.Services.AutoMapper;
+using SAM.Services.Dto;
 using Xunit;
 
 namespace SAM.Tests.Services
@@ -10,12 +13,20 @@ namespace SAM.Tests.Services
     public class MachineServiceTests
     {
         private readonly Mock<IRepositoryDatabase<Machine>> _repositoryMock;
+        private readonly Mock<IRepositoryDatabase<OrderService>> _orderRepositoryMock;
+        private readonly IMapper _mapper;
         private readonly MachineService _machineService;
 
         public MachineServiceTests()
         {
             _repositoryMock = new Mock<IRepositoryDatabase<Machine>>();
-            _machineService = new MachineService(_repositoryMock.Object);
+            _orderRepositoryMock = new Mock<IRepositoryDatabase<OrderService>>();
+            var config = new MapperConfiguration(cfg =>
+                cfg.AddProfile(new MapperProfile())
+            );
+            _mapper = config.CreateMapper();
+
+            _machineService = new MachineService(_mapper, _repositoryMock.Object, _orderRepositoryMock.Object);
         }
 
         [Fact]
@@ -23,13 +34,14 @@ namespace SAM.Tests.Services
         {
             // Arrange
             var machine = new Machine { Id = 1, Name = "Test Machine", Status = MachineStatusEnum.Active, IdUnit = 1 };
+            var machineDto = _mapper.Map<MachineDto>(machine);
             _repositoryMock.Setup(r => r.Create(It.IsAny<Machine>())).Returns(machine);
 
             // Act
-            var result = _machineService.Create(machine);
+            var result = _machineService.Create(machineDto);
 
             // Assert
-            Assert.Equal(machine, result);
+            Assert.Equal(machineDto, result);
             _repositoryMock.Verify(r => r.Create(It.IsAny<Machine>()), Times.Once);
         }
 
@@ -69,13 +81,14 @@ namespace SAM.Tests.Services
             // Arrange
             int machineId = 1;
             var machine = new Machine { Id = machineId, Name = "Test Machine", Status = MachineStatusEnum.Active, IdUnit = 1 };
+            var machineDto = _mapper.Map<MachineDto>(machine);
             _repositoryMock.Setup(r => r.Read(machineId)).Returns(machine);
 
             // Act
             var result = _machineService.Get(machineId);
 
             // Assert
-            Assert.Equal(machine, result);
+            Assert.Equal(machineDto, result);
             _repositoryMock.Verify(r => r.Read(machineId), Times.Once);
         }
 
@@ -88,13 +101,14 @@ namespace SAM.Tests.Services
                 new Machine { Id = 1, Name = "Machine 1", Status = MachineStatusEnum.Active, IdUnit = 1 },
                 new Machine { Id = 2, Name = "Machine 2", Status = MachineStatusEnum.Inactive, IdUnit = 2 }
             };
+            var machineDtos = _mapper.Map<IEnumerable<MachineDto>>(machines);
             _repositoryMock.Setup(r => r.ReadAll()).Returns(machines);
 
             // Act
             var result = _machineService.GetAll();
 
             // Assert
-            Assert.Equal(machines, result);
+            Assert.Equal(machineDtos, result);
             _repositoryMock.Verify(r => r.ReadAll(), Times.Once);
         }
 
@@ -103,13 +117,14 @@ namespace SAM.Tests.Services
         {
             // Arrange
             var machine = new Machine { Id = 1, Name = "Updated Machine", Status = MachineStatusEnum.Maintenance, IdUnit = 1 };
+            var machineDto = _mapper.Map<MachineDto>(machine);
             _repositoryMock.Setup(r => r.Update(It.IsAny<Machine>())).Returns(machine);
 
             // Act
-            var result = _machineService.Update(machine);
+            var result = _machineService.Update(machine.Id, machineDto);
 
             // Assert
-            Assert.Equal(machine, result);
+            Assert.Equal(machineDto, result);
             _repositoryMock.Verify(r => r.Update(It.IsAny<Machine>()), Times.Once);
         }
 
@@ -123,13 +138,14 @@ namespace SAM.Tests.Services
                 new Machine { Id = 1, Name = "Machine 1", Status = MachineStatusEnum.Active, IdUnit = unitId },
                 new Machine { Id = 2, Name = "Machine 2", Status = MachineStatusEnum.Inactive, IdUnit = unitId }
             };
+            var machineDtos = _mapper.Map<IEnumerable<MachineDto>>(machines);
             _repositoryMock.Setup(r => r.Search(m => m.IdUnit == unitId)).Returns(machines);
 
             // Act
             var result = _machineService.ListByUnit(unitId);
 
             // Assert
-            Assert.Equal(machines, result);
+            Assert.Equal(machineDtos, result);
             _repositoryMock.Verify(r => r.Search(m => m.IdUnit == unitId), Times.Once);
         }
     }

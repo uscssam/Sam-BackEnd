@@ -9,7 +9,7 @@ namespace SAM.Entities
         public required DateTime Opening { get; set; }
         public DateTime? Closed { get; set; }
         public required int IdMachine { get; set; }
-        public required int IdTechnician { get; set; }
+        public int? IdTechnician { get; set; }
         public required int CreatedBy { get; set; }
     }
 }

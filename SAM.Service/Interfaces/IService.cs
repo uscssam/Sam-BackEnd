@@ -1,14 +1,15 @@
-﻿using SAM.Entities;
+﻿using SAM.Services.Dto;
 
 namespace SAM.Services.Interfaces
 {
-    public interface IService<T>
-        where T : BaseEntity
+    public interface IService<TDto>
+        where TDto : BaseDto
     {
-        T Get(int id);
-        List<T> GetAll();
+        TDto Get(int id);
+        IEnumerable<TDto> GetAll();
+        IEnumerable<TDto> Search(TDto entity);
         bool Delete(int id);
-        T Update(T entity);
-        T Create(T entity);
+        TDto Update(int id, TDto entity);
+        TDto Create(TDto entity);
     }
 }

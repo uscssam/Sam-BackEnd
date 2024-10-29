@@ -8,9 +8,9 @@ namespace SAM.Api.Controllers
     [Route("[controller]")]
     public class LoginController : Controller
     {
-        private readonly GenerateToken _generateToken;
+        private readonly IGenerateToken _generateToken;
 
-        public LoginController(GenerateToken generateToken)
+        public LoginController(IGenerateToken generateToken)
         {
             _generateToken = generateToken;
         }
@@ -21,7 +21,7 @@ namespace SAM.Api.Controllers
             var token = await _generateToken.GenerateJwt(authInfo);
             if(token == null)
             {
-                return NotFound("Usuário ou senha Inválidos");
+                return NotFound("Nome de usuário ou senha inválidos");
             }
             return Ok(new { Token = token });
         }

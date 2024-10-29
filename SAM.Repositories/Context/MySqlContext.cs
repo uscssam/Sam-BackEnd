@@ -68,8 +68,7 @@ namespace SAM.Repositories.Database.Context
 
                 entity.HasOne<User>()
                   .WithMany()
-                  .HasForeignKey(x => x.IdTechnician)
-                  .IsRequired();
+                  .HasForeignKey(x => x.IdTechnician);
             });
 
             // Configuração da tabela Unit
