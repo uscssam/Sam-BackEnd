@@ -1,4 +1,7 @@
-﻿namespace SAM.Services.Dto;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SAM.Services.Dto;
+[ExcludeFromCodeCoverage]
 public class UnitSearchDto :  BaseDto
 {
     public  string? Name { get; set; }

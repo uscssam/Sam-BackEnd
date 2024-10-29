@@ -1,7 +1,8 @@
 ﻿using SAM.Entities.Enum;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SAM.Services.Dto;
-
+[ExcludeFromCodeCoverage]
 public class UserReturnDto : BaseDto, IEquatable<UserReturnDto>
 {
     public UserReturnDto(UserDto user)

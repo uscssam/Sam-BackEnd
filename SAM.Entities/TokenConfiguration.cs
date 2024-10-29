@@ -1,5 +1,8 @@
-﻿namespace SAM.Entities
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SAM.Entities
 {
+    [ExcludeFromCodeCoverage]
     public class TokenConfiguration
     {
         public string? Secret { get; set; }

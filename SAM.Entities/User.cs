@@ -1,7 +1,9 @@
 ﻿using SAM.Entities.Enum;
 using SAM.Entities;
 using SAM.Entities.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
+[ExcludeFromCodeCoverage]
 public class UserReturn : BaseEntity, ICurrentUser
 {
     public UserReturn() { }

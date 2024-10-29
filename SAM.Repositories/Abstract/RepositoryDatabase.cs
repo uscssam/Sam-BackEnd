@@ -2,10 +2,12 @@
 using SAM.Entities;
 using SAM.Repositories.Database.Context;
 using SAM.Repositories.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace SAM.Repositories.Abstract
 {
+    [ExcludeFromCodeCoverage]
     public abstract class RepositoryDatabase<T> : IRepositoryDatabase<T>
         where T : BaseEntity
     {

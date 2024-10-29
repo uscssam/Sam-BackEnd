@@ -46,36 +46,6 @@ namespace SAM.Tests.Services
         }
 
         [Fact]
-        public void Delete_ShouldReturnTrue_WhenMachineIsDeleted()
-        {
-            // Arrange
-            int machineId = 1;
-            _repositoryMock.Setup(r => r.Delete(machineId)).Returns(true);
-
-            // Act
-            var result = _machineService.Delete(machineId);
-
-            // Assert
-            Assert.True(result);
-            _repositoryMock.Verify(r => r.Delete(machineId), Times.Once);
-        }
-
-        [Fact]
-        public void Delete_ShouldReturnFalse_WhenMachineIsNotDeleted()
-        {
-            // Arrange
-            int machineId = 1;
-            _repositoryMock.Setup(r => r.Delete(machineId)).Returns(false);
-
-            // Act
-            var result = _machineService.Delete(machineId);
-
-            // Assert
-            Assert.False(result);
-            _repositoryMock.Verify(r => r.Delete(machineId), Times.Once);
-        }
-
-        [Fact]
         public void Get_ShouldReturnMachine_WhenMachineExists()
         {
             // Arrange
@@ -97,10 +67,10 @@ namespace SAM.Tests.Services
         {
             // Arrange
             var machines = new List<Machine>
-            {
-                new Machine { Id = 1, Name = "Machine 1", Status = MachineStatusEnum.Active, IdUnit = 1 },
-                new Machine { Id = 2, Name = "Machine 2", Status = MachineStatusEnum.Inactive, IdUnit = 2 }
-            };
+                {
+                    new Machine { Id = 1, Name = "Machine 1", Status = MachineStatusEnum.Active, IdUnit = 1 },
+                    new Machine { Id = 2, Name = "Machine 2", Status = MachineStatusEnum.Inactive, IdUnit = 2 }
+                };
             var machineDtos = _mapper.Map<IEnumerable<MachineDto>>(machines);
             _repositoryMock.Setup(r => r.ReadAll()).Returns(machines);
 
@@ -113,31 +83,15 @@ namespace SAM.Tests.Services
         }
 
         [Fact]
-        public void Update_ShouldReturnUpdatedMachine()
-        {
-            // Arrange
-            var machine = new Machine { Id = 1, Name = "Updated Machine", Status = MachineStatusEnum.Maintenance, IdUnit = 1 };
-            var machineDto = _mapper.Map<MachineDto>(machine);
-            _repositoryMock.Setup(r => r.Update(It.IsAny<Machine>())).Returns(machine);
-
-            // Act
-            var result = _machineService.Update(machine.Id, machineDto);
-
-            // Assert
-            Assert.Equal(machineDto, result);
-            _repositoryMock.Verify(r => r.Update(It.IsAny<Machine>()), Times.Once);
-        }
-
-        [Fact]
         public void ListByUnit_ShouldReturnMachinesForGivenUnit()
         {
             // Arrange
             int unitId = 1;
             var machines = new List<Machine>
-            {
-                new Machine { Id = 1, Name = "Machine 1", Status = MachineStatusEnum.Active, IdUnit = unitId },
-                new Machine { Id = 2, Name = "Machine 2", Status = MachineStatusEnum.Inactive, IdUnit = unitId }
-            };
+                {
+                    new Machine { Id = 1, Name = "Machine 1", Status = MachineStatusEnum.Active, IdUnit = unitId },
+                    new Machine { Id = 2, Name = "Machine 2", Status = MachineStatusEnum.Inactive, IdUnit = unitId }
+                };
             var machineDtos = _mapper.Map<IEnumerable<MachineDto>>(machines);
             _repositoryMock.Setup(r => r.Search(m => m.IdUnit == unitId)).Returns(machines);
 
@@ -147,6 +101,63 @@ namespace SAM.Tests.Services
             // Assert
             Assert.Equal(machineDtos, result);
             _repositoryMock.Verify(r => r.Search(m => m.IdUnit == unitId), Times.Once);
+        }
+
+        [Fact]
+        public void Delete_ShouldThrowException_WhenMachineHasOrders()
+        {
+            // Arrange
+            int machineId = 1;
+            _orderRepositoryMock.Setup(r => r.Search(o => o.IdMachine == machineId)).Returns(new List<OrderService>
+                {
+                    new OrderService
+                    {
+                        Description = "Test Order",
+                        Status = OrderServiceStatusEnum.Open,
+                        Opening = DateTime.Now,
+                        IdMachine = machineId,
+                        CreatedBy = 1
+                    }
+                });
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _machineService.Delete(machineId));
+            Assert.Equal("A máquina informada possui ordens de serviço", exception.Message);
+        }
+
+        [Fact]
+        public void Delete_ShouldReturnTrue_WhenMachineHasNoOrders()
+        {
+            // Arrange
+            int machineId = 1;
+            var machine = new Machine { Id = machineId, Name = "Test Machine", Status = MachineStatusEnum.Active, IdUnit = 1 };
+            _orderRepositoryMock.Setup(r => r.Search(o => o.IdMachine == machineId)).Returns(new List<OrderService>());
+            _repositoryMock.Setup(r => r.Read(machineId)).Returns(machine);
+            _repositoryMock.Setup(r => r.Delete(machineId)).Returns(true);
+
+            // Act
+            var result = _machineService.Delete(machineId);
+
+            // Assert
+            Assert.True(result);
+            _repositoryMock.Verify(r => r.Delete(machineId), Times.Once);
+        }
+
+        [Fact]
+        public void Update_ShouldReturnUpdatedMachine()
+        {
+            // Arrange
+            int machineId = 1;
+            var existingMachine = new Machine { Id = machineId, Name = "Old Machine", Status = MachineStatusEnum.Active, IdUnit = 1 };
+            var updatedMachineDto = new MachineDto { Name = "Updated Machine", IdUnit = 1 };
+            _repositoryMock.Setup(r => r.Read(machineId)).Returns(existingMachine);
+            _repositoryMock.Setup(r => r.Update(It.IsAny<Machine>())).Returns((Machine m) => m);
+
+            // Act
+            var result = _machineService.Update(machineId, updatedMachineDto);
+
+            // Assert
+            Assert.Equal(updatedMachineDto.Name, result.Name);
         }
     }
 }

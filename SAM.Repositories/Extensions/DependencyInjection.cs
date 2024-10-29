@@ -2,9 +2,11 @@
 using SAM.Entities;
 using SAM.Repositories.Database.Context;
 using SAM.Repositories.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SAM.Repositories.Database.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class DependencyInjection
     {
         public static IServiceCollection AddDatabaseRepository(this IServiceCollection services)

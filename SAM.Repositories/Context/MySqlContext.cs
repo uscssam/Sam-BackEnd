@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SAM.Entities;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SAM.Repositories.Database.Context
 {
+    [ExcludeFromCodeCoverage]
     public class MySqlContext : DbContext
     {
         private readonly IConfiguration _configuration;

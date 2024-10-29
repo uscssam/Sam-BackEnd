@@ -4,8 +4,8 @@ namespace SAM.Services.Dto;
 public class MachineDto : BaseDto, IEquatable<MachineDto>
 {
     public required string Name { get; set; }
-    public MachineStatusEnum? Status { get; internal set; }
-    public DateTime? LastMaintenance { get; internal set; }
+    public MachineStatusEnum? Status { get; set; }
+    public DateTime? LastMaintenance { get; set; }
     public required int IdUnit { get; set; }
 
     public bool Equals(MachineDto? other)

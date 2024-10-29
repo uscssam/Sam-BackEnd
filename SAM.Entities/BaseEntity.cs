@@ -1,6 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace SAM.Entities;
+
+[ExcludeFromCodeCoverage]
 public abstract class BaseEntity
 {
     public int Id { get; set; }

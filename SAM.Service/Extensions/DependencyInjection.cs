@@ -3,10 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using SAM.Services;
 using SAM.Services.Dto;
 using SAM.Services.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace SAM.Service.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class DependencyInjection
     {
         public static IServiceCollection AddServices(this IServiceCollection services)

@@ -4,13 +4,14 @@ using SAM.Entities;
 using SAM.Entities.Enum;
 using SAM.Entities.Interfaces;
 using SAM.Repositories.Interfaces;
-using SAM.Service;
 using SAM.Services;
 using SAM.Services.AutoMapper;
 using SAM.Services.Dto;
 using SAM.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Xunit;
-using ZstdSharp.Unsafe;
 
 namespace SAM.Tests.Services
 {
@@ -25,7 +26,7 @@ namespace SAM.Tests.Services
         {
             _repositoryMock = new Mock<IRepositoryDatabase<OrderService>>();
             var _currentUser = new Mock<ICurrentUser>();
-            _currentUser.Object.Id = 1; 
+            _currentUser.Setup(c => c.Id).Returns(1);
             var config = new MapperConfiguration(cfg =>
                 cfg.AddProfile(new MapperProfile())
             );
@@ -35,29 +36,13 @@ namespace SAM.Tests.Services
             _orderServiceService = new OrderServiceService(_mapper, _repositoryMock.Object, _currentUser.Object, _machineService.Object);
         }
 
-        [Fact]
-        public void Create_ShouldReturnCreatedOrderService()
+        private static void SetId<T>(T obj, int id)
         {
-            // Arrange
-            var orderService = new OrderService
+            var property = typeof(T).GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
+            if (property != null && property.CanWrite)
             {
-                Id = 1,
-                Description = "Test Order Service",
-                Status = OrderServiceStatusEnum.Open,
-                Opening = DateTime.Now,
-                IdMachine = 1,
-                IdTechnician = 1,
-                CreatedBy = 1
-            };
-            var orderServiceDto = _mapper.Map<OrderServiceDto>(orderService);
-            _repositoryMock.Setup(r => r.Create(It.IsAny<OrderService>())).Returns(orderService);
-
-            // Act
-            var result = _orderServiceService.Create(orderServiceDto);
-
-            // Assert
-            Assert.Equal(orderServiceDto, result);
-            _repositoryMock.Verify(r => r.Create(It.IsAny<OrderService>()), Times.Once);
+                property.SetValue(obj, id);
+            }
         }
 
         [Fact]
@@ -97,7 +82,6 @@ namespace SAM.Tests.Services
             int orderServiceId = 1;
             var orderService = new OrderService
             {
-                Id = orderServiceId,
                 Description = "Test Order Service",
                 Status = OrderServiceStatusEnum.Open,
                 Opening = DateTime.Now,
@@ -105,6 +89,7 @@ namespace SAM.Tests.Services
                 IdTechnician = 1,
                 CreatedBy = 1
             };
+            SetId(orderService, orderServiceId);
             var orderServiceDto = _mapper.Map<OrderServiceDto>(orderService);
             _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
 
@@ -124,7 +109,6 @@ namespace SAM.Tests.Services
             {
                 new OrderService
                 {
-                    Id = 1,
                     Description = "Order Service 1",
                     Status = OrderServiceStatusEnum.Open,
                     Opening = DateTime.Now,
@@ -134,7 +118,6 @@ namespace SAM.Tests.Services
                 },
                 new OrderService
                 {
-                    Id = 2,
                     Description = "Order Service 2",
                     Status = OrderServiceStatusEnum.Completed,
                     Opening = DateTime.Now,
@@ -143,6 +126,8 @@ namespace SAM.Tests.Services
                     CreatedBy = 2
                 }
             };
+            SetId(orderServices[0], 1);
+            SetId(orderServices[1], 2);
             var orderServiceDtos = _mapper.Map<IEnumerable<OrderServiceDto>>(orderServices);
             _repositoryMock.Setup(r => r.ReadAll()).Returns(orderServices);
 
@@ -155,28 +140,222 @@ namespace SAM.Tests.Services
         }
 
         [Fact]
-        public void Update_ShouldReturnUpdatedOrderService()
+        public void Update_ShouldUpdateOrderServiceAndMachineStatus()
         {
             // Arrange
+            int orderServiceId = 1;
+            var orderServiceDto = new OrderServiceDto
+            {
+                IdTechnician = 2,
+                Status = OrderServiceStatusEnum.Completed
+            };
+            SetId(orderServiceDto, orderServiceId);
             var orderService = new OrderService
             {
-                Id = 1,
-                Description = "Updated Order Service",
-                Status = OrderServiceStatusEnum.Completed,
+                Description = "Test Order Service",
+                Status = OrderServiceStatusEnum.InProgress,
                 Opening = DateTime.Now,
                 IdMachine = 1,
-                IdTechnician = 1,
                 CreatedBy = 1
             };
-            var orderServiceDto = _mapper.Map<OrderServiceDto>(orderService);
-            _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Returns(orderService);
+            SetId(orderService, orderServiceId);
+            var machineDto = new MachineDto
+            {
+                Name = "Machine 1",
+                Status = MachineStatusEnum.Maintenance,
+                IdUnit = 1
+            };
+            SetId(machineDto, 1);
+
+            _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
+            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Callback<OrderService>(os =>
+            {
+                os.Status = OrderServiceStatusEnum.Completed;
+                os.Closed = DateTime.Now;
+            }).Returns((OrderService os) => os);
+            _machineService.Setup(m => m.Update(1, It.IsAny<MachineDto>())).Callback<int, MachineDto>((id, updatedMachine) =>
+            {
+                machineDto.Status = MachineStatusEnum.Active;
+            });
 
             // Act
-            var result = _orderServiceService.Update(orderService.Id, orderServiceDto);
+            var result = _orderServiceService.Update(orderServiceId, orderServiceDto);
 
             // Assert
-            Assert.Equal(orderServiceDto, result);
+            Assert.Equal(OrderServiceStatusEnum.Completed, result.Status);
+            Assert.Equal(MachineStatusEnum.Active, machineDto.Status);
+            Assert.NotNull(result.Closed);
+            _repositoryMock.Verify(r => r.Read(orderServiceId), Times.Once);
             _repositoryMock.Verify(r => r.Update(It.IsAny<OrderService>()), Times.Once);
+            _machineService.Verify(m => m.Update(1, It.IsAny<MachineDto>()), Times.Once);
         }
+
+        [Fact]
+        public void Create_ShouldThrowArgumentException_WhenIdMachineIsInvalid()
+        {
+            // Arrange
+            var orderServiceDto = new OrderServiceDto
+            {
+                IdMachine = null
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => _orderServiceService.Create(orderServiceDto));
+            Assert.Equal("O valor de IdMachine informado é inválido.", exception.Message);
+        }
+
+        [Fact]
+        public void Create_ShouldSetStatusToOpenAndMachineStatusToInactive_WhenIdMachineIsValidAndNoIdTechnician()
+        {
+            // Arrange
+            var orderServiceDto = new OrderServiceDto
+            {
+                IdMachine = 1
+            };
+            var machineDto = new MachineDto
+            {
+                Name = "Machine 1",
+                Status = MachineStatusEnum.Active,
+                IdUnit = 1
+            };
+            SetId(machineDto, 1);
+
+            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _repositoryMock.Setup(r => r.Create(It.IsAny<OrderService>())).Returns((OrderService os) => os);
+
+            // Act
+            var result = _orderServiceService.Create(orderServiceDto);
+
+            // Assert
+            Assert.Equal(OrderServiceStatusEnum.Open, result.Status);
+            Assert.Equal(MachineStatusEnum.Inactive, machineDto.Status);
+            Assert.Equal(1, result.CreatedBy);
+            Assert.NotNull(result.Opening);
+            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+        }
+
+        [Fact]
+        public void Create_ShouldSetStatusToInProgressAndMachineStatusToMaintenance_WhenIdMachineIsValidAndIdTechnicianIsPresent()
+        {
+            // Arrange
+            var orderServiceDto = new OrderServiceDto
+            {
+                IdMachine = 1,
+                IdTechnician = 2
+            };
+            var machineDto = new MachineDto
+            {
+                Name = "Machine 1",
+                Status = MachineStatusEnum.Active,
+                IdUnit = 1
+            };
+            SetId(machineDto, 1);
+
+            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _repositoryMock.Setup(r => r.Create(It.IsAny<OrderService>())).Returns((OrderService os) => os);
+
+            // Act
+            var result = _orderServiceService.Create(orderServiceDto);
+
+            // Assert
+            Assert.Equal(OrderServiceStatusEnum.InProgress, result.Status);
+            Assert.Equal(MachineStatusEnum.Maintenance, machineDto.Status);
+            Assert.Equal(1, result.CreatedBy);
+            Assert.NotNull(result.Opening);
+            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+        }
+
+        [Fact]
+        public void Update_ShouldSetMachineStatusToMaintenance_WhenStatusIsInProgress()
+        {
+            // Arrange
+            int orderServiceId = 1;
+            var orderServiceDto = new OrderServiceDto
+            {
+                Status = OrderServiceStatusEnum.InProgress
+            };
+            var orderService = new OrderService
+            {
+                Description = "Test Order Service",
+                Status = OrderServiceStatusEnum.Open,
+                Opening = DateTime.Now,
+                IdMachine = 1,
+                CreatedBy = 1
+            };
+            SetId(orderService, orderServiceId);
+            var machineDto = new MachineDto
+            {
+                Name = "Machine 1",
+                Status = MachineStatusEnum.Active,
+                IdUnit = 1
+            };
+            SetId(machineDto, 1);
+
+            _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
+            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Returns((OrderService os) => os);
+            _machineService.Setup(m => m.Update(1, It.IsAny<MachineDto>())).Callback<int, MachineDto>((id, updatedMachine) =>
+            {
+                machineDto.Status = updatedMachine.Status;
+            });
+
+            // Act
+            var result = _orderServiceService.Update(orderServiceId, orderServiceDto);
+
+            // Assert
+            Assert.Equal(OrderServiceStatusEnum.InProgress, result.Status);
+            Assert.Equal(MachineStatusEnum.Maintenance, machineDto.Status);
+            _repositoryMock.Verify(r => r.Read(orderServiceId), Times.Once);
+            _repositoryMock.Verify(r => r.Update(It.IsAny<OrderService>()), Times.Once);
+            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+        }
+
+        [Fact]
+        public void Update_ShouldSetMachineStatusToInactive_WhenStatusIsImpeded()
+        {
+            // Arrange
+            int orderServiceId = 1;
+            var orderServiceDto = new OrderServiceDto
+            {
+                Status = OrderServiceStatusEnum.Impeded
+            };
+            var orderService = new OrderService
+            {
+                Description = "Test Order Service",
+                Status = OrderServiceStatusEnum.Open,
+                Opening = DateTime.Now,
+                IdMachine = 1,
+                CreatedBy = 1
+            };
+            SetId(orderService, orderServiceId);
+            var machineDto = new MachineDto
+            {
+                Name = "Machine 1",
+                Status = MachineStatusEnum.Active,
+                IdUnit = 1
+            };
+            SetId(machineDto, 1);
+
+            _repositoryMock.Setup(r => r.Read(orderServiceId)).Returns(orderService);
+            _machineService.Setup(m => m.Get(1)).Returns(machineDto);
+            _repositoryMock.Setup(r => r.Update(It.IsAny<OrderService>())).Returns((OrderService os) => os);
+            _machineService.Setup(m => m.Update(1, It.IsAny<MachineDto>())).Callback<int, MachineDto>((id, updatedMachine) =>
+            {
+                machineDto.Status = updatedMachine.Status;
+            });
+
+            // Act
+            var result = _orderServiceService.Update(orderServiceId, orderServiceDto);
+
+            // Assert
+            Assert.Equal(OrderServiceStatusEnum.Impeded, result.Status);
+            Assert.Equal(MachineStatusEnum.Inactive, machineDto.Status);
+            _repositoryMock.Verify(r => r.Read(orderServiceId), Times.Once);
+            _repositoryMock.Verify(r => r.Update(It.IsAny<OrderService>()), Times.Once);
+            _machineService.Verify(m => m.Update(1, machineDto), Times.Once);
+        }
+
+
     }
 }

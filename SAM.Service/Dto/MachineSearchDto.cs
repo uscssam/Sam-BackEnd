@@ -1,6 +1,8 @@
 ﻿using SAM.Entities.Enum;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SAM.Services.Dto;
+[ExcludeFromCodeCoverage]
 public class MachineSearchDto : BaseDto
 {
     public string? Name { get; set; }
