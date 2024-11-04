@@ -8,10 +8,12 @@ namespace SAM.Api.Controllers
     [Route("[controller]")]
     public class LoginController : Controller
     {
+        private readonly ILogger logger;
         private readonly IGenerateToken _generateToken;
 
-        public LoginController(IGenerateToken generateToken)
+        public LoginController(ILogger<LoginController> logger, IGenerateToken generateToken)
         {
+            this.logger = logger;
             _generateToken = generateToken;
         }
 
@@ -21,6 +23,7 @@ namespace SAM.Api.Controllers
             var token = await _generateToken.GenerateJwt(authInfo);
             if(token == null)
             {
+                logger.LogWarning($"Tentativa de login inválida para o usuário {authInfo.Username}.", DateTime.Now);
                 return NotFound("Nome de usuário ou senha inválidos");
             }
             return Ok(new { Token = token });

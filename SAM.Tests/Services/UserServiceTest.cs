@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Moq;
 using SAM.Entities.Enum;
 using SAM.Repositories.Interfaces;
@@ -15,16 +16,18 @@ namespace SAM.Tests.Services
         private readonly Mock<IRepositoryDatabase<User>> _repositoryMock;
         private readonly IMapper _mapper;
         private readonly UserService _userService;
+        private readonly Mock<ILogger<UserService>> _loggerMock;
 
         public UserServiceTests()
         {
+            _loggerMock = new Mock<ILogger<UserService>>();
             _repositoryMock = new Mock<IRepositoryDatabase<User>>();
             var config = new MapperConfiguration(cfg =>
                 cfg.AddProfile(new MapperProfile())
             );
             _mapper = config.CreateMapper();
 
-            _userService = new UserService(_mapper, _repositoryMock.Object);
+            _userService = new UserService(_loggerMock.Object, _mapper, _repositoryMock.Object);
         }
 
         [Fact]
@@ -58,7 +61,8 @@ namespace SAM.Tests.Services
                 Fullname = "Test User",
                 Email = "test@example.com",
                 Phone = "1234567890",
-                Level = LevelEnum.Employee
+                Level = LevelEnum.Employee,
+                Password = "password"
             };
             var userDto = _mapper.Map<UserDto>(user);
             _repositoryMock.Setup(r => r.Search(It.IsAny<Expression<Func<User, bool>>>())).Returns(new List<User>());
@@ -68,6 +72,9 @@ namespace SAM.Tests.Services
             var result = _userService.Create(userDto);
 
             // Assert
+            Assert.NotNull(result.Password);
+            userDto.Password = null;
+            result.Password = null;
             Assert.Equal(userDto, result);
             _repositoryMock.Verify(r => r.Search(It.IsAny<Expression<Func<User, bool>>>()), Times.Once);
             _repositoryMock.Verify(r => r.Create(It.IsAny<User>()), Times.Once);
@@ -131,6 +138,9 @@ namespace SAM.Tests.Services
             var result = _userService.Update(user.Id, userDto);
 
             // Assert
+            Assert.NotNull(result.Password);
+            userDto.Password = null;
+            result.Password = null;
             Assert.Equal(userDto, result);
             _repositoryMock.Verify(r => r.Update(It.IsAny<User>()), Times.Once);
         }

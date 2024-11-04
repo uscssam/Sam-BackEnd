@@ -115,13 +115,6 @@ namespace SAM.Services.Abstract
             return mapper.Map<IEnumerable<TDto>>(results);
         }
 
-
-
-        private static bool IsNullableType(Type type)
-        {
-            return !type.IsValueType || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>));
-        }
-
         public virtual TDto Update(int id, TDto entity)
         {
             entity.Id = id;

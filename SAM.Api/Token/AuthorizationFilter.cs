@@ -8,10 +8,12 @@ namespace SAM.Api.Token;
 
 public class AuthorizationFilter : IAsyncAuthorizationFilter
 {
+    private readonly ILogger logger;
     private ICurrentUser currentUser;
 
-    public AuthorizationFilter(ICurrentUser currentUser)
+    public AuthorizationFilter(ILogger<AuthorizationFilter> logger, ICurrentUser currentUser)
     {
+        this.logger = logger;
         this.currentUser = currentUser;
     }
 
@@ -40,7 +42,11 @@ public class AuthorizationFilter : IAsyncAuthorizationFilter
                 case LevelEnum.Employee: ok = ValidateEmployee(controllerName, actionName); break;
             }
         }
-        if (!ok) context.Result = new ChallengeResult();
+        if (!ok)
+        {
+            logger.LogError($"Usuário {currentUser.Id} não autorizado a acessar {controllerName}/{actionName}.");
+            context.Result = new ChallengeResult();
+        }
         return Task.CompletedTask;
     }
 

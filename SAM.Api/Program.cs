@@ -31,6 +31,8 @@ namespace SAM.Api
                 config.Filters.Add<AuthorizationFilter>();
             });
 
+            builder.Services.AddLogging();
+
             builder.Services.AddScoped<ICurrentUser, UserReturn>();
 
             builder.Services

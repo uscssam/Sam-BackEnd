@@ -1,4 +1,5 @@
 ﻿using SAM.Entities.Enum;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SAM.Services.Dto;
@@ -33,12 +34,17 @@ public class UserReturnDto : BaseDto, IEquatable<UserReturnDto>
 
 public class UserDto : BaseDto, IEquatable<UserDto>
 {
+    [MaxLength(50, ErrorMessage = "O nome de usuário deve ter no máximo 50 caracteres")]
     public required string UserName { get; set; }
+    [MaxLength(50, ErrorMessage = "O nome completo deve ter no máximo 50 caracteres")]
     public required string Fullname { get; set; }
+    [EmailAddress(ErrorMessage = "Endereço de e-mail inválido")]
     public required string Email { get; set; }
+    [RegularExpression(@"^\+?[1-9]\d{1,14}$", ErrorMessage = "Número de telefone inválido")]
     public required string Phone { get; set; }
     public required LevelEnum Level { get; set; }
     public TechnicianTypeEnum? Speciality { get; set; }
+    [RegularExpression(@"^.{4,20}$", ErrorMessage = "A senha deve ter entre 4 e 20 caracteres")]
     public string? Password { get; set; }
 
     public bool Equals(UserDto? other)

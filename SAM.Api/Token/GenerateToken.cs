@@ -32,9 +32,12 @@ namespace SAM.Api.Token
                 var tokenHandler = new JwtSecurityTokenHandler();
 
 
-                var user = _userRepository.Search(u => u.UserName == authenticate.Username && u.Password == authenticate.Password).FirstOrDefault();
+                var user = _userRepository.Search(u => u.UserName == authenticate.Username).FirstOrDefault();
 
                 if (user == null)
+                    return null!;
+
+                if(BCrypt.Net.BCrypt.Verify(authenticate.Password, user.Password) == false)
                     return null!;
 
                 List<Claim> claims = new()

@@ -95,7 +95,7 @@ namespace SAM.Repositories.Database.Context
                 entity.Property(e => e.UserName).HasMaxLength(50);
                 entity.Property(e => e.Fullname).HasMaxLength(50);
                 entity.Property(e => e.Email).HasMaxLength(50);
-                entity.Property(e => e.Password).HasMaxLength(20);
+                entity.Property(e => e.Password).IsRequired().HasMaxLength(60);
                 entity.Property(e => e.Phone).HasMaxLength(20);
                 entity.Property(e => e.Level)
                     .IsRequired()

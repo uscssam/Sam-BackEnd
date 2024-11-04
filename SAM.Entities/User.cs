@@ -34,5 +34,5 @@ public class User : BaseEntity
     public required string Phone { get; set; }
     public required LevelEnum Level { get; set; }
     public TechnicianTypeEnum? Speciality { get; set; }
-    public string? Password { get; set; }
+    public string Password { get; set; } = string.Empty;
 }
