@@ -98,7 +98,6 @@ namespace SAM.Tests.Services
             {
                 Id = 1,
                 UserName = "existingUser",
-                Password = null,
                 Phone = "1234567890",
                 Level = LevelEnum.Employee,
                 Fullname = "Existing User",
